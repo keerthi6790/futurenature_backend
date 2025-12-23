@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(uuid())
+  phone_number    String    @unique
+  firstName       String?
+  lastName        String?
+  hashed_password String?
+  is_verified     Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @default(now())
+  isAdmin         Boolean   @default(false)
+  posted_review   Review[]
+  address         Address[]
+  cart Cart?
+}
+
+model Otp {
+  id           String @id @default(uuid())
+  phone_number String @unique
+  otp          String
+}
+
+model Product {
+  id                 String             @id @default(uuid())
+  product_name       String
+  product_name_tamil String
+  variants           AttributeProduct[]
+  description        String
+  description_tamil  String
+  imageUrl           String[]
+  price              String
+  discounted_type    String
+  discounted_amount  String
+  selling_price      String
+  available_quantity Int                @default(5)
+  reviews            Review[]
+}
+
+model Review {
+  id        String  @id @default(uuid())
+  Product   Product @relation(fields: [reviewId], references: [id])
+  reviewId  String
+  review    String
+  rating    String
+  addedById String  @unique
+  addedBy   User    @relation(fields: [addedById], references: [id])
+}
+
+model AttributeProduct {
+  id                 String  @id @default(uuid())
+  Product            Product @relation(fields: [attributeId], references: [id])
+  attributeId        String
+  attribute_name     String
+  price              String
+  title              String
+  available_quantity Int     @default(5)
+  discounted_type    String
+  discounted_amount  String
+  selling_price      String
+  cart CartItem[]
+
+}
+
+model Address {
+  id       String  @id @default(uuid())
+  address1 String
+  address2 String
+  address3 String
+  address4 String?
+  pincode  String
+  city     String
+  district String
+  state    String
+  userId   String
+  phone_number String
+  User     User    @relation(fields: [userId], references: [id])
+}
+
+
+model Cart{
+  id String @id @default(uuid())
+  total_price String
+  discounted_price String
+  mrp_price String
+  user User @relation(fields: [userId], references: [id])
+  userId String @unique
+  cart_item CartItem[]
+}
+
+model CartItem{
+  id String @id @default(uuid())
+  selected_quantity String
+  total_price String
+  discounted_price String
+  mrp_price String
+  cartId String
+  cart Cart @relation(fields: [cartId],references: [id])
+  product AttributeProduct @relation(fields: [productId], references: [id])
+  productId String
+}
