@@ -1,0 +1,7 @@
+﻿
+> futurenature@1.0.0 start
+> tsnd --respawn --transpile-only --exit-child src/app.ts
+
+[INFO] 23:21:57 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.9.3)
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒöÉ encrypt with Dotenvx: https://dotenvx.com
+Process running on http://localhost:8081

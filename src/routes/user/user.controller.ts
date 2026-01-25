@@ -92,24 +92,13 @@ export const verifyOtp = async (
           },
         });
       } else {
-        const userData = await prisma.user.create({
-          data: {
-            phone_number: mobileNumber,
-            is_verified: true,
-          },
-        });
-
-        const payload = {
-          id: userData.id,
-        };
-
-        const token = request.jwt.sign(payload);
+        // New Customer Flow: Do not create user yet.
+        // Do not send token.
         reply.code(201).send({
           status: true,
           message: "Otp verified!",
           data: {
             code: "NEW_CUSTOMER",
-            token,
           },
         });
       }
@@ -137,17 +126,14 @@ export const RegisterUser = async (
 
     const hashed_password = await bcrypt.hash(password, 10);
 
-    console.log({ id: request.user.id });
-
-    await prisma.user.update({
-      where: {
-        phone_number: mobileNumber,
-        id: request.user.id,
-      },
+    // Create new user directly
+    await prisma.user.create({
       data: {
         firstName,
         lastName,
         hashed_password,
+        phone_number: mobileNumber,
+        is_verified: true,
       },
     });
 

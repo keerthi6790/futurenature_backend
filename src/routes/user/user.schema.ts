@@ -4,9 +4,7 @@ import z from "zod";
 export const TriggerOtpRequestSchema = z.object({
   mobileNumber: z
     .string()
-    .min(10, { message: "Mobile number must be at least 10 digits long." })
-    .max(10, { message: "Mobile number cannot exceed 10 digits." })
-    .regex(/^\+?[1-9]\d{1,10}$/, { message: "Invalid mobile number format." }),
+    .regex(/^[6-9]\d{9}$/, { message: "Invalid mobile number. Must be a 10-digit Indian number starting with 6-9." }),
 });
 
 export const ResponseSchema = z.object({
@@ -24,9 +22,7 @@ export const VerityOtpRequestSchema = z.object({
     .string({
       required_error: "Mobile Number is Required",
     })
-    .min(10, { message: "Mobile number must be at least 10 digits long." })
-    .max(10, { message: "Mobile number cannot exceed 10 digits." })
-    .regex(/^\+?[1-9]\d{1,10}$/, { message: "Invalid mobile number format." }),
+    .regex(/^[6-9]\d{9}$/, { message: "Invalid mobile number. Must be a 10-digit Indian number starting with 6-9." }),
   otp: z.string({
     required_error: "Otp is Required",
   }),
@@ -41,9 +37,7 @@ export const CreateUserRequestSchema = z.object({
   }),
   mobileNumber: z
     .string()
-    .min(10, { message: "Mobile number must be at least 10 digits long." })
-    .max(10, { message: "Mobile number cannot exceed 10 digits." })
-    .regex(/^\+?[1-9]\d{1,10}$/, { message: "Invalid mobile number format." }),
+    .regex(/^[6-9]\d{9}$/, { message: "Invalid mobile number. Must be a 10-digit Indian number starting with 6-9." }),
   password: z
     .string({
       required_error: "Password is required",

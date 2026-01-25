@@ -20,7 +20,7 @@ export const AddProducts = async (
   } = request.body;
 
   try {
-    if (!request.user.isAdmin) {
+    if (!(request.user as any).isAdmin) {
       reply.code(500).send({
         status: false,
         data: "You don't have an access to add the product",
@@ -105,6 +105,11 @@ export const listAllProducts = async (
         discounted_amount: true,
         imageUrl: true,
         discounted_type: true,
+        description: true,
+        description_tamil: true,
+        variants: true,
+        overall_rating: true,
+        review_count: true,
       },
     });
 

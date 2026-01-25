@@ -1,12 +1,12 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
+}
+
+generator markdown {
+  provider = "prisma-markdown"
+  output   = "./prisma.md"
+  title    = "FutureNature Backend Schema"
 }
 
 datasource db {
@@ -15,18 +15,19 @@ datasource db {
 }
 
 model User {
-  id              String    @id @default(uuid())
-  phone_number    String    @unique
+  id              String     @id @default(uuid())
+  phone_number    String     @unique
   firstName       String?
   lastName        String?
   hashed_password String?
-  is_verified     Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @default(now())
-  isAdmin         Boolean   @default(false)
-  posted_review   Review[]
+  is_verified     Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @default(now())
+  isAdmin         Boolean    @default(false)
   address         Address[]
-  cart Cart?
+  cart            Cart?
+  posted_review   Review?
+  wishlist        Wishlist[]
 }
 
 model Otp {
@@ -38,78 +39,90 @@ model Otp {
 model Product {
   id                 String             @id @default(uuid())
   product_name       String
-  product_name_tamil String
-  variants           AttributeProduct[]
   description        String
-  description_tamil  String
   imageUrl           String[]
   price              String
-  discounted_type    String
-  discounted_amount  String
-  selling_price      String
   available_quantity Int                @default(5)
+  description_tamil  String
+  discounted_amount  String
+  discounted_type    String
+  product_name_tamil String
+  selling_price      String
+  overall_rating     Float              @default(0)
+  review_count       Int                @default(0)
+  variants           AttributeProduct[]
   reviews            Review[]
+  wishlistedBy       Wishlist[]
 }
 
 model Review {
   id        String  @id @default(uuid())
-  Product   Product @relation(fields: [reviewId], references: [id])
   reviewId  String
   review    String
-  rating    String
   addedById String  @unique
+  rating    Int
   addedBy   User    @relation(fields: [addedById], references: [id])
+  Product   Product @relation(fields: [reviewId], references: [id])
 }
 
 model AttributeProduct {
-  id                 String  @id @default(uuid())
-  Product            Product @relation(fields: [attributeId], references: [id])
+  id                 String     @id @default(uuid())
   attributeId        String
   attribute_name     String
   price              String
   title              String
-  available_quantity Int     @default(5)
-  discounted_type    String
+  available_quantity Int        @default(5)
   discounted_amount  String
+  discounted_type    String
   selling_price      String
-  cart CartItem[]
-
+  Product            Product    @relation(fields: [attributeId], references: [id])
+  cart               CartItem[]
 }
 
 model Address {
-  id       String  @id @default(uuid())
-  address1 String
-  address2 String
-  address3 String
-  address4 String?
-  pincode  String
-  city     String
-  district String
-  state    String
-  userId   String
+  id           String  @id @default(uuid())
+  address1     String
+  address2     String
+  address3     String
+  address4     String?
+  pincode      String
+  city         String
+  district     String
+  state        String
+  userId       String
   phone_number String
-  User     User    @relation(fields: [userId], references: [id])
+  User         User    @relation(fields: [userId], references: [id])
 }
 
-
-model Cart{
-  id String @id @default(uuid())
-  total_price String
+model Cart {
+  id               String     @id @default(uuid())
+  total_price      String
   discounted_price String
-  mrp_price String
-  user User @relation(fields: [userId], references: [id])
-  userId String @unique
-  cart_item CartItem[]
+  mrp_price        String
+  userId           String     @unique
+  user             User       @relation(fields: [userId], references: [id])
+  cart_item        CartItem[]
 }
 
-model CartItem{
-  id String @id @default(uuid())
+model CartItem {
+  id                String           @id @default(uuid())
   selected_quantity String
-  total_price String
-  discounted_price String
-  mrp_price String
-  cartId String
-  cart Cart @relation(fields: [cartId],references: [id])
-  product AttributeProduct @relation(fields: [productId], references: [id])
+  total_price       String
+  discounted_price  String
+  mrp_price         String
+  cartId            String
+  productId         String
+  cart              Cart             @relation(fields: [cartId], references: [id])
+  product           AttributeProduct @relation(fields: [productId], references: [id])
+}
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
   productId String
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, productId])
 }

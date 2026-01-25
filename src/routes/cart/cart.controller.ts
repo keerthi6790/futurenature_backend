@@ -58,15 +58,15 @@ export const addProductsToCart = async (
         },
       });
 
-      const { discounted_price, mrp_price, total_price } = cartItemData.reduce(
+      const { discounted_price, mrp_price, total_price } = cartItemData?.reduce(
         (a, b) => {
           a.discounted_price = String(
-            Number(a.discounted_price) + Number(b.discounted_price)
+            Number(a?.discounted_price || 0) + Number(b?.discounted_price)
           );
-          a.mrp_price = String(Number(a.mrp_price) + Number(b.mrp_price));
-          a.total_price = String(Number(a.total_price) + Number(b.total_price));
+          a.mrp_price = String(Number(a?.mrp_price || 0) + Number(b?.mrp_price));
+          a.total_price = String(Number(a?.total_price || 0) + Number(b?.total_price));
           return a;
-        }
+        }, { discounted_price: '0', mrp_price: "0", total_price: "0" }
       );
 
       const cartData = await prisma.cart.update({
@@ -91,7 +91,15 @@ export const addProductsToCart = async (
           ),
         },
         include: {
-          cart_item: true,
+          cart_item: {
+            include: {
+              product: {
+                include: {
+                  Product: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -113,6 +121,7 @@ export const addProductsToCart = async (
       });
     }
   } catch (err) {
+    console.log({ err })
     reply.code(500).send({
       data: err,
       status: false,
@@ -133,7 +142,11 @@ export const getAllCartItem = async (
       include: {
         cart_item: {
           include: {
-            product: true,
+            product: {
+              include: {
+                Product: true,
+              },
+            },
           },
         },
       },

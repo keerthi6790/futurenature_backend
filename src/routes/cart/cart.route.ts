@@ -13,12 +13,28 @@ export const CartRoutes = async (app: FastifyInstance) => {
       preHandler: [app.authenticate],
       schema: {
         body: $ref("AddCartRequestSchema"),
+        tags: ["Cart"],
+        summary: "Add products to cart",
+        description:
+          "Adds products to the user's cart. Involves `prisma.cart.upsert` and `prisma.cartItem.upsert`.",
       },
     },
     addProductsToCart
   );
 
-  app.get("/all", { preHandler: [app.authenticate] }, getAllCartItem);
+  app.get(
+    "/all",
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        tags: ["Cart"],
+        summary: "Get all cart items",
+        description:
+          "Fetches all items in the user's cart using `prisma.cart.findUnique` with `include`.",
+      },
+    },
+    getAllCartItem
+  );
 
   app.delete(
     "/delete",
@@ -26,6 +42,10 @@ export const CartRoutes = async (app: FastifyInstance) => {
       preHandler: [app.authenticate],
       schema: {
         body: $ref("DeleteCartRequestSchema"),
+        tags: ["Cart"],
+        summary: "Delete an item from cart",
+        description:
+          "Removes an item from the user's cart using `prisma.cartItem.delete`.",
       },
     },
     deleteCartItem

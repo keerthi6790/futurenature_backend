@@ -13,6 +13,10 @@ export async function AddressRoutes(app: FastifyInstance) {
     {
       schema: {
         body: $ref("AddAddressRequestSchema"),
+        tags: ["Address"],
+        summary: "Add a new address",
+        description:
+          "Creates a new address for the authenticated user using `prisma.address.create`.",
       },
       preHandler: [app.authenticate],
     },
@@ -23,6 +27,12 @@ export async function AddressRoutes(app: FastifyInstance) {
     "/alladdress",
     {
       preHandler: [app.authenticate],
+      schema: {
+        tags: ["Address"],
+        summary: "Get all addresses for the user",
+        description:
+          "Fetches all addresses associated with the authenticated user using `prisma.address.findMany`.",
+      },
     },
     GetAllUserAddress
   );
@@ -31,6 +41,18 @@ export async function AddressRoutes(app: FastifyInstance) {
     "/delete/:id",
     {
       preHandler: [app.authenticate],
+      schema: {
+        params: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+          },
+        },
+        tags: ["Address"],
+        summary: "Delete an address",
+        description:
+          "Deletes a specific address using `prisma.address.delete`. Requires authentication.",
+      },
     },
     deleteAddress
   );
@@ -41,6 +63,16 @@ export async function AddressRoutes(app: FastifyInstance) {
       preHandler: [app.authenticate],
       schema: {
         body: $ref("EditAddressRequestSchema"),
+        params: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+          },
+        },
+        tags: ["Address"],
+        summary: "Edit an address",
+        description:
+          "Updates an existing address using `prisma.address.update`. Requires authentication.",
       },
     },
     editAddress
