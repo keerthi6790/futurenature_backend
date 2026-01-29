@@ -11,6 +11,8 @@ import { addressSchema } from "./routes/address/address.schema";
 import { CartRoutes } from "./routes/cart/cart.route";
 import { cartSchema } from "./routes/cart/cart.schema";
 import wishlistRoutes from "./routes/wishlist/wishlist.route";
+import contactRoutes from "./routes/contact/contact.route";
+import { contactSchemas } from "./routes/contact/contact.schema";
 import fastifyCors from "@fastify/cors";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
@@ -84,6 +86,7 @@ for (let schema of [
   ...reviewSchema,
   ...addressSchema,
   ...cartSchema,
+  ...contactSchemas,
 ]) {
   server.addSchema(schema);
 }
@@ -94,6 +97,7 @@ server.register(ReviewRoutes, { prefix: "api/review" });
 server.register(AddressRoutes, { prefix: "api/address" });
 server.register(CartRoutes, { prefix: "api/cart" });
 server.register(wishlistRoutes, { prefix: "api/wishlist" });
+server.register(contactRoutes, { prefix: "api/contact" });
 
 server
   .listen({ port: 8081 })
