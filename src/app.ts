@@ -68,11 +68,16 @@ server.decorate(
     const decoded = req.jwt.verify<FastifyJWT["user"]>(token);
 
     req.user = decoded;
-  }
+  },
 );
 
 server.register(fastifyCors, {
-  origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "https://enhanceassets.netlify.app"],
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    "https://enhanceassets.netlify.app",
+  ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 });
@@ -102,7 +107,7 @@ server.register(contactRoutes, { prefix: "api/contact" });
 server.register(PaymentRoutes, { prefix: "api/payment" });
 
 server
-  .listen({ port: 8081 })
+  .listen({ port: 8081, host: "0.0.0.0" })
   .then(() => console.log(`Process running on http://localhost:8081`))
   .catch((err) => {
     console.log({ err });
