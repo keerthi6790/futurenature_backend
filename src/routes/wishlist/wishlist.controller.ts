@@ -33,7 +33,7 @@ export const toggleWishlist = async (
 
     if (existingWishlist) {
       // Remove from wishlist
-      await prisma.wishlist.delete({
+      await prisma.Wishlist.delete({
         where: {
           userId_productId: {
             userId,
