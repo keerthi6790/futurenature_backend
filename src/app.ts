@@ -13,6 +13,7 @@ import { cartSchema } from "./routes/cart/cart.schema";
 import wishlistRoutes from "./routes/wishlist/wishlist.route";
 import contactRoutes from "./routes/contact/contact.route";
 import { contactSchemas } from "./routes/contact/contact.schema";
+import { PaymentRoutes } from "./routes/payment/payment.route";
 import fastifyCors from "@fastify/cors";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
@@ -98,6 +99,7 @@ server.register(AddressRoutes, { prefix: "api/address" });
 server.register(CartRoutes, { prefix: "api/cart" });
 server.register(wishlistRoutes, { prefix: "api/wishlist" });
 server.register(contactRoutes, { prefix: "api/contact" });
+server.register(PaymentRoutes, { prefix: "api/payment" });
 
 server
   .listen({ port: 8081 })

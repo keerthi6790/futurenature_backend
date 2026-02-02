@@ -19,13 +19,14 @@ export const addProductsToCart = async (
     });
 
     if (!productData) {
-      reply.code(200).send({
+      return reply.code(200).send({
         status: false,
         message: "Attribute Id/ Product id is mismatched",
       });
     }
 
     if (!cartId) {
+      // Create new cart
       const cartData = await prisma.cart.create({
         data: {
           userId: request.user.id,
@@ -52,43 +53,68 @@ export const addProductsToCart = async (
         message: "Cart Added Successfully",
       });
     } else {
-      const cartItemData = await prisma.cartItem.findMany({
+      // Check if item already exists in cart AND Belongs to this user (optional security but good practice, though cartId should be unique)
+      const existingItem = await prisma.cartItem.findFirst({
         where: {
           cartId: cartId,
+          productId: attributeId,
         },
       });
 
-      const { discounted_price, mrp_price, total_price } = cartItemData?.reduce(
-        (a, b) => {
-          a.discounted_price = String(
-            Number(a?.discounted_price || 0) + Number(b?.discounted_price)
-          );
-          a.mrp_price = String(Number(a?.mrp_price || 0) + Number(b?.mrp_price));
-          a.total_price = String(Number(a?.total_price || 0) + Number(b?.total_price));
-          return a;
-        }, { discounted_price: '0', mrp_price: "0", total_price: "0" }
+      if (existingItem) {
+        // Update existing item
+        const newQuantity = Number(existingItem.selected_quantity) + 1;
+
+        // Calculate new prices for this item
+        const newDiscountedPrice = String(Number(productData.discounted_amount || 0) * newQuantity);
+        const newMrpPrice = String(Number(productData.price || 0) * newQuantity);
+        const newTotalPrice = String(Number(productData.selling_price || 0) * newQuantity);
+
+        await prisma.cartItem.update({
+          where: { id: existingItem.id },
+          data: {
+            selected_quantity: String(newQuantity),
+            discounted_price: newDiscountedPrice,
+            mrp_price: newMrpPrice,
+            total_price: newTotalPrice
+          }
+        });
+
+      } else {
+        // Create new item
+        await prisma.cartItem.create({
+          data: {
+            productId: attributeId,
+            discounted_price: productData?.discounted_amount || "",
+            mrp_price: productData?.price || "",
+            total_price: productData?.selling_price || "",
+            selected_quantity: "1",
+            cartId: cartId,
+          },
+        });
+      }
+
+      // Finally, recalculate Cart totals from scratch to ensure accuracy
+      const allCartItems = await prisma.cartItem.findMany({
+        where: { cartId: cartId }
+      });
+
+      const { totalDiscounted, totalMrp, totalSelling } = allCartItems.reduce(
+        (acc, item) => {
+          acc.totalDiscounted += Number(item.discounted_price || 0);
+          acc.totalMrp += Number(item.mrp_price || 0);
+          acc.totalSelling += Number(item.total_price || 0);
+          return acc;
+        },
+        { totalDiscounted: 0, totalMrp: 0, totalSelling: 0 }
       );
 
       const cartData = await prisma.cart.update({
-        where: {
-          id: cartId,
-        },
+        where: { id: cartId },
         data: {
-          discounted_price: String(
-            productData?.discounted_amount
-              ? Number(productData.discounted_amount) + Number(discounted_price)
-              : Number(discounted_price)
-          ),
-          mrp_price: String(
-            productData?.price
-              ? Number(productData.price) + Number(mrp_price)
-              : Number(mrp_price)
-          ),
-          total_price: String(
-            productData?.selling_price
-              ? Number(productData.selling_price) + Number(total_price)
-              : Number(total_price)
-          ),
+          discounted_price: String(totalDiscounted),
+          mrp_price: String(totalMrp),
+          total_price: String(totalSelling),
         },
         include: {
           cart_item: {
@@ -103,20 +129,9 @@ export const addProductsToCart = async (
         },
       });
 
-      await prisma.cartItem.create({
-        data: {
-          productId: attributeId,
-          discounted_price: productData?.discounted_amount || "",
-          mrp_price: productData?.price || "",
-          total_price: productData?.selling_price || "",
-          selected_quantity: "1",
-          cartId: cartId,
-        },
-      });
-
       reply.code(200).send({
         status: true,
-        message: "Added Successfully",
+        message: existingItem ? "Cart Updated Successfully" : "Added Successfully",
         data: cartData,
       });
     }
