@@ -69,13 +69,20 @@ const AddProductsRequestSchme = z.object({
   ),
 });
 
+const UpdateProductsRequestSchme = AddProductsRequestSchme.partial();
+
 export type ZodAddProductsRequestSchme = z.infer<
   typeof AddProductsRequestSchme
+>;
+
+export type ZodUpdateProductsRequestSchme = z.infer<
+  typeof UpdateProductsRequestSchme
 >;
 
 export const { schemas: productSchemas, $ref } = buildJsonSchemas(
   {
     AddProductsRequestSchme,
+    UpdateProductsRequestSchme,
   },
   { $id: "productSchemas" }
 );

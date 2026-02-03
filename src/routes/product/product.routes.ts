@@ -2,8 +2,10 @@ import { FastifyInstance } from "fastify";
 import { $ref } from "./product.schema";
 import {
   AddProducts,
+  DeleteProduct,
   getSpecificProductData,
   listAllProducts,
+  UpdateProduct,
 } from "./product.controller";
 
 export async function ProductRoutes(app: FastifyInstance) {
@@ -65,5 +67,46 @@ export async function ProductRoutes(app: FastifyInstance) {
       },
     },
     getSpecificProductData
+  );
+
+  app.put(
+    "/update/:id",
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        params: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+          },
+        },
+        body: $ref("UpdateProductsRequestSchme"),
+        tags: ["Product"],
+        summary: "Update an existing product (Admin only)",
+        description:
+          "Updates product details and replaces variants. Requires admin authentication.",
+      },
+    },
+    UpdateProduct
+  );
+
+  app.delete(
+    "/delete/:id",
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        params: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+          },
+        },
+        tags: ["Product"],
+        summary: "Delete a product (Admin only)",
+        description:
+          "Deletes a product and its associated variants. Requires admin authentication.",
+      },
+    },
+    DeleteProduct
   );
 }
