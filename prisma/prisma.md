@@ -38,6 +38,8 @@ erDiagram
   String selling_price
   Float overall_rating
   Int review_count
+  Boolean isDailyDeals
+  Boolean isDeleted
 }
 "Review" {
   String id PK
@@ -45,17 +47,6 @@ erDiagram
   String review
   String addedById FK,UK
   Int rating
-}
-"AttributeProduct" {
-  String id PK
-  String attributeId FK
-  String attribute_name
-  String price
-  String title
-  Int available_quantity
-  String discounted_amount
-  String discounted_type
-  String selling_price
 }
 "Address" {
   String id PK
@@ -76,6 +67,7 @@ erDiagram
   String discounted_price
   String mrp_price
   String userId FK,UK
+  DateTime createdAt
 }
 "CartItem" {
   String id PK
@@ -92,15 +84,40 @@ erDiagram
   String productId FK
   DateTime createdAt
 }
+"Order" {
+  String id PK
+  String userId FK
+  String total_price
+  String discounted_price
+  String mrp_price
+  String paymentStatus
+  String paymentId "nullable"
+  String razorpayOrderId "nullable"
+  String addressId FK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"OrderItem" {
+  String id PK
+  String orderId FK
+  String productId FK
+  String selected_quantity
+  String total_price
+  String discounted_price
+  String mrp_price
+}
 "Review" |o--|| "User" : addedBy
 "Review" }o--|| "Product" : Product
-"AttributeProduct" }o--|| "Product" : Product
 "Address" }o--|| "User" : User
 "Cart" |o--|| "User" : user
 "CartItem" }o--|| "Cart" : cart
-"CartItem" }o--|| "AttributeProduct" : product
+"CartItem" }o--|| "Product" : product
 "Wishlist" }o--|| "Product" : product
 "Wishlist" }o--|| "User" : user
+"Order" }o--|| "User" : user
+"Order" }o--|| "Address" : address
+"OrderItem" }o--|| "Order" : order
+"OrderItem" }o--|| "Product" : product
 ```
 
 ### `User`
@@ -142,6 +159,8 @@ Properties as follows:
 - `selling_price`:
 - `overall_rating`:
 - `review_count`:
+- `isDailyDeals`:
+- `isDeleted`:
 
 ### `Review`
 
@@ -152,20 +171,6 @@ Properties as follows:
 - `review`:
 - `addedById`:
 - `rating`:
-
-### `AttributeProduct`
-
-Properties as follows:
-
-- `id`:
-- `attributeId`:
-- `attribute_name`:
-- `price`:
-- `title`:
-- `available_quantity`:
-- `discounted_amount`:
-- `discounted_type`:
-- `selling_price`:
 
 ### `Address`
 
@@ -192,6 +197,7 @@ Properties as follows:
 - `discounted_price`:
 - `mrp_price`:
 - `userId`:
+- `createdAt`:
 
 ### `CartItem`
 
@@ -213,3 +219,31 @@ Properties as follows:
 - `userId`:
 - `productId`:
 - `createdAt`:
+
+### `Order`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `total_price`:
+- `discounted_price`:
+- `mrp_price`:
+- `paymentStatus`:
+- `paymentId`:
+- `razorpayOrderId`:
+- `addressId`:
+- `createdAt`:
+- `updatedAt`:
+
+### `OrderItem`
+
+Properties as follows:
+
+- `id`:
+- `orderId`:
+- `productId`:
+- `selected_quantity`:
+- `total_price`:
+- `discounted_price`:
+- `mrp_price`:

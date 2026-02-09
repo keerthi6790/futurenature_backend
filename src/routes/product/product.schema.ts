@@ -35,38 +35,6 @@ const AddProductsRequestSchme = z.object({
       required_error: "Available Quantity is Required",
     })
     .optional(),
-
-  variants: z.array(
-    z.object({
-      attributeName: z.string({
-        required_error: "Name is Required",
-      }),
-      price: z.string({
-        required_error: "Price is Required",
-      }),
-      title: z.string({
-        required_error: "Price is Required",
-      }),
-      imageUrl: z.array(
-        z.string({
-          required_error: "Image url is Required",
-        })
-      ),
-      discountedType: z.enum(["percentage", "mrp"], {
-        required_error: "Discounted type is required",
-        invalid_type_error:
-          "Discounted value only accept two values, percentage or mrp",
-      }),
-      discountedAmount: z.string({
-        required_error: "Discounted amount is required",
-      }),
-      availableQuantity: z
-        .string({
-          required_error: "Available Quantity is Required",
-        })
-        .optional(),
-    })
-  ),
 });
 
 const UpdateProductsRequestSchme = AddProductsRequestSchme.partial();

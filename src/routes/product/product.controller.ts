@@ -1,17 +1,16 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { ZodAddProductsRequestSchme } from "./product.schema";
+import { ZodAddProductsRequestSchme, ZodUpdateProductsRequestSchme } from "./product.schema";
 import prisma from "../../utils/Prisma";
 
 export const AddProducts = async (
   request: FastifyRequest<{ Body: ZodAddProductsRequestSchme }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   const {
     description,
     imageUrl,
     price,
     productName,
-    variants,
     descriptionTamil,
     discountedAmount,
     discountedType,
@@ -50,33 +49,6 @@ export const AddProducts = async (
       },
     });
 
-    const productAttribute = variants.map((variant) => {
-      let sellingPrice: number = 0;
-      if (variant.discountedType === "percentage") {
-        sellingPrice =
-          +variant.price - +variant.price * (+variant.discountedAmount / 100);
-      }
-      if (variant.discountedType === "mrp") {
-        sellingPrice = +variant.price - +variant.discountedAmount;
-      }
-      return {
-        attribute_name: variant.attributeName,
-        price: variant.price,
-        title: variant.title,
-        attributeId: data.id,
-        discounted_amount: variant.discountedAmount,
-        discounted_type: variant.discountedType,
-        selling_price: String(sellingPrice),
-        available_quantity: variant.availableQuantity
-          ? +variant.availableQuantity
-          : 5,
-      };
-    });
-
-    await prisma.attributeProduct.createMany({
-      data: productAttribute,
-    });
-
     reply.code(200).send({
       status: true,
       message: "Added Successfully!",
@@ -91,11 +63,15 @@ export const AddProducts = async (
 };
 
 export const listAllProducts = async (
-  request: FastifyRequest,
-  reply: FastifyReply
+  request: FastifyRequest<{ Querystring: { includeDeleted?: string } }>,
+  reply: FastifyReply,
 ) => {
+  const { includeDeleted } = request.query;
   try {
     const productData = await prisma.product.findMany({
+      where: includeDeleted === "true" ? {} : {
+        isDeleted: false,
+      },
       select: {
         id: true,
         product_name: true,
@@ -107,9 +83,10 @@ export const listAllProducts = async (
         discounted_type: true,
         description: true,
         description_tamil: true,
-        variants: true,
         overall_rating: true,
         review_count: true,
+        isDailyDeals: true,
+        available_quantity: true
       },
     });
 
@@ -127,7 +104,7 @@ export const listAllProducts = async (
 
 export const getSpecificProductData = async (
   request: FastifyRequest<{ Params: { id: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   try {
     const productInfo = await prisma.product.findFirst({
@@ -135,7 +112,6 @@ export const getSpecificProductData = async (
         id: request.params.id,
       },
       include: {
-        variants: true,
         reviews: {
           select: {
             rating: true,
@@ -176,7 +152,7 @@ export const UpdateProduct = async (
     Params: { id: string };
     Body: ZodUpdateProductsRequestSchme;
   }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   const { id } = request.params;
   const {
@@ -184,7 +160,6 @@ export const UpdateProduct = async (
     imageUrl,
     price,
     productName,
-    variants,
     descriptionTamil,
     discountedAmount,
     discountedType,
@@ -224,8 +199,10 @@ export const UpdateProduct = async (
 
     if (price || discountedAmount || discountedType) {
       const finalPrice = price || existingProduct.price;
-      const finalDiscountType = discountedType || existingProduct.discounted_type;
-      const finalDiscountAmount = discountedAmount || existingProduct.discounted_amount;
+      const finalDiscountType =
+        discountedType || existingProduct.discounted_type;
+      const finalDiscountAmount =
+        discountedAmount || existingProduct.discounted_amount;
 
       if (finalDiscountType === "percentage") {
         sellingPrice = +finalPrice - +finalPrice * (+finalDiscountAmount / 100);
@@ -244,51 +221,13 @@ export const UpdateProduct = async (
       data: updateData,
     });
 
-    // Handle variants update by replacing them if provided
-    if (variants) {
-      await prisma.attributeProduct.deleteMany({
-        where: { attributeId: id },
-      });
-
-      const productAttributes = variants.map((variant) => {
-        let variantSellingPrice = 0;
-        if (variant.discountedType === "percentage") {
-          variantSellingPrice =
-            +(variant.price || 0) -
-            +(variant.price || 0) * (+(variant.discountedAmount || 0) / 100);
-        } else if (variant.discountedType === "mrp") {
-          variantSellingPrice =
-            +(variant.price || 0) - +(variant.discountedAmount || 0);
-        }
-
-        return {
-          attribute_name: variant.attributeName || "",
-          price: variant.price || "0",
-          title: variant.title || "",
-          attributeId: id,
-          discounted_amount: variant.discountedAmount || "0",
-          discounted_type: variant.discountedType || "mrp",
-          selling_price: String(variantSellingPrice),
-          available_quantity: variant.availableQuantity
-            ? +variant.availableQuantity
-            : 5,
-        };
-      });
-
-      if (productAttributes.length > 0) {
-        await prisma.attributeProduct.createMany({
-          data: productAttributes,
-        });
-      }
-    }
-
     reply.code(200).send({
       status: true,
       message: "Updated Successfully!",
       data: updatedProduct,
     });
   } catch (err) {
-    console.error(err);
+    console.error({ err });
     reply.code(500).send({
       status: false,
       data: err,
@@ -298,9 +237,11 @@ export const UpdateProduct = async (
 
 export const DeleteProduct = async (
   request: FastifyRequest<{ Params: { id: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   const { id } = request.params;
+
+  console.log({ id })
 
   try {
     if (!(request.user as any).isAdmin) {
@@ -310,14 +251,10 @@ export const DeleteProduct = async (
       });
     }
 
-    // Delete variants first due to foreign key constraints if not set to cascade
-    await prisma.attributeProduct.deleteMany({
-      where: { attributeId: id },
-    });
-
-    // Delete the product
-    await prisma.product.delete({
+    // Soft delete the product
+    await prisma.product.update({
       where: { id },
+      data: { isDeleted: true },
     });
 
     reply.code(200).send({
@@ -325,7 +262,95 @@ export const DeleteProduct = async (
       message: "Deleted Successfully!",
     });
   } catch (err) {
-    console.error(err);
+    console.error({ err });
+    reply.code(500).send({
+      status: false,
+      data: err,
+    });
+  }
+};
+
+export const RestoreProduct = async (
+  request: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply,
+) => {
+  const { id } = request.params;
+
+  try {
+    if (!(request.user as any).isAdmin) {
+      return reply.code(403).send({
+        status: false,
+        message: "You don't have access to restore products",
+      });
+    }
+
+    await prisma.product.update({
+      where: { id },
+      data: { isDeleted: false },
+    });
+
+    reply.code(200).send({
+      status: true,
+      message: "Restored Successfully!",
+    });
+  } catch (err) {
+    console.error({ err });
+    reply.code(500).send({
+      status: false,
+      data: err,
+    });
+  }
+};
+
+export const getDailyDeals = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const dailyDeals = await prisma.product.findMany({
+      where: {
+        isDailyDeals: true,
+        isDeleted: false,
+      },
+    });
+
+    reply.code(200).send({
+      status: true,
+      data: dailyDeals,
+    });
+  } catch (err) {
+    reply.code(500).send({
+      status: false,
+      data: err,
+    });
+  }
+};
+
+export const toggleDailyDeal = async (
+  request: FastifyRequest<{ Params: { id: string }; Body: { isDailyDeals: boolean } }>,
+  reply: FastifyReply,
+) => {
+  const { id } = request.params;
+  const { isDailyDeals } = request.body;
+
+  try {
+    if (!(request.user as any).isAdmin) {
+      return reply.code(403).send({
+        status: false,
+        message: "You don't have access to update daily deals",
+      });
+    }
+
+    await prisma.product.update({
+      where: { id },
+      data: { isDailyDeals },
+    });
+
+    reply.code(200).send({
+      status: true,
+      message: isDailyDeals ? "Added to Daily Deals" : "Removed from Daily Deals",
+    });
+  } catch (err) {
     reply.code(500).send({
       status: false,
       data: err,

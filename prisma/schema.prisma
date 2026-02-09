@@ -28,6 +28,7 @@ model User {
   cart            Cart?
   posted_review   Review?
   wishlist        Wishlist[]
+  orders          Order[]
 }
 
 model Otp {
@@ -37,22 +38,25 @@ model Otp {
 }
 
 model Product {
-  id                 String             @id @default(uuid())
+  id                 String     @id @default(uuid())
   product_name       String
   description        String
   imageUrl           String[]
   price              String
-  available_quantity Int                @default(5)
+  available_quantity Int        @default(5)
   description_tamil  String
   discounted_amount  String
   discounted_type    String
   product_name_tamil String
   selling_price      String
-  overall_rating     Float              @default(0)
-  review_count       Int                @default(0)
-  variants           AttributeProduct[]
+  overall_rating     Float      @default(0)
+  review_count       Int        @default(0)
+  isDailyDeals       Boolean    @default(false)
+  isDeleted          Boolean    @default(false)
   reviews            Review[]
   wishlistedBy       Wishlist[]
+  cart               CartItem[]
+  order_items        OrderItem[]
 }
 
 model Review {
@@ -63,20 +67,6 @@ model Review {
   rating    Int
   addedBy   User    @relation(fields: [addedById], references: [id])
   Product   Product @relation(fields: [reviewId], references: [id])
-}
-
-model AttributeProduct {
-  id                 String     @id @default(uuid())
-  attributeId        String
-  attribute_name     String
-  price              String
-  title              String
-  available_quantity Int        @default(5)
-  discounted_amount  String
-  discounted_type    String
-  selling_price      String
-  Product            Product    @relation(fields: [attributeId], references: [id])
-  cart               CartItem[]
 }
 
 model Address {
@@ -92,6 +82,7 @@ model Address {
   userId       String
   phone_number String
   User         User    @relation(fields: [userId], references: [id])
+  orders       Order[]
 }
 
 model Cart {
@@ -102,18 +93,19 @@ model Cart {
   userId           String     @unique
   user             User       @relation(fields: [userId], references: [id])
   cart_item        CartItem[]
+  createdAt        DateTime   @default(now())
 }
 
 model CartItem {
-  id                String           @id @default(uuid())
+  id                String @id @default(uuid())
   selected_quantity String
   total_price       String
   discounted_price  String
   mrp_price         String
   cartId            String
   productId         String
-  cart              Cart             @relation(fields: [cartId], references: [id])
-  product           AttributeProduct @relation(fields: [productId], references: [id])
+  cart              Cart    @relation(fields: [cartId], references: [id])
+  product           Product @relation(fields: [productId], references: [id])
 }
 
 model Wishlist {
@@ -125,4 +117,33 @@ model Wishlist {
   user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, productId])
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  total_price     String
+  discounted_price String
+  mrp_price       String
+  paymentStatus   String      @default("PENDING") // PENDING, PAID, FAILED
+  paymentId       String?
+  razorpayOrderId String?
+  addressId       String
+  address         Address     @relation(fields: [addressId], references: [id])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @default(now()) @updatedAt
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id                String  @id @default(uuid())
+  orderId           String
+  order             Order   @relation(fields: [orderId], references: [id])
+  productId         String
+  product           Product @relation(fields: [productId], references: [id])
+  selected_quantity String
+  total_price       String
+  discounted_price  String
+  mrp_price         String
 }

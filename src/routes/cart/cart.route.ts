@@ -3,6 +3,7 @@ import {
   addProductsToCart,
   deleteCartItem,
   getAllCartItem,
+  updateCartItemQuantity,
 } from "./cart.controller";
 import { $ref } from "./cart.schema";
 
@@ -49,5 +50,20 @@ export const CartRoutes = async (app: FastifyInstance) => {
       },
     },
     deleteCartItem
+  );
+
+  app.put(
+    "/update-quantity",
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        body: $ref("UpdateCartQuantityRequestSchema"),
+        tags: ["Cart"],
+        summary: "Update item quantity in cart",
+        description:
+          "Updates the quantity of an item in the user's cart and recalculates totals.",
+      },
+    },
+    updateCartItemQuantity
   );
 };

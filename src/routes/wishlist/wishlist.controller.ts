@@ -6,7 +6,7 @@ export const toggleWishlist = async (
   reply: FastifyReply,
 ) => {
   try {
-    const userId = request.user.id;
+    const userId = (request.user as any).id;
     const { productId } = request.params;
 
     // Check if product exists
@@ -33,7 +33,7 @@ export const toggleWishlist = async (
 
     if (existingWishlist) {
       // Remove from wishlist
-      await prisma.Wishlist.delete({
+      await prisma.wishlist.delete({
         where: {
           userId_productId: {
             userId,
@@ -76,22 +76,18 @@ export const getWishlist = async (
   reply: FastifyReply,
 ) => {
   try {
-    const userId = request.user.id;
+    const userId = (request.user as any).id;
 
     const wishlist = await prisma.wishlist.findMany({
       where: { userId },
       include: {
-        product: {
-          include: {
-            variants: true,
-          },
-        },
+        product: true,
       },
     });
 
     return reply.code(200).send({
       status: true,
-      data: wishlist.map((item) => item.product),
+      data: wishlist.map((item: any) => item.product),
     });
   } catch (err) {
     return reply.code(500).send({

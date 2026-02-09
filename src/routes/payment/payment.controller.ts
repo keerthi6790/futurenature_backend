@@ -10,48 +10,72 @@ const razorpay = new Razorpay({
 import prisma from "../../utils/Prisma";
 
 export const createOrder = async (
-    request: FastifyRequest<{ Body: { cartId: string; currency: string } }>,
+    request: FastifyRequest<{ Body: { cartId: string; currency: string; addressId: string } }>,
     reply: FastifyReply
 ) => {
     try {
-        const { cartId, currency } = request.body;
+        const { cartId, currency, addressId } = request.body;
+        const userId = (request.user as any).id;
 
-        if (!cartId) {
+        if (!cartId || !addressId) {
             return reply.code(400).send({
                 status: false,
-                message: "Cart ID is required",
+                message: "Cart ID and Address ID are required",
             });
         }
 
         const cart = await prisma.cart.findUnique({
-            where: { id: cartId }
+            where: { id: cartId },
+            include: { cart_item: true }
         });
 
-        if (!cart) {
+        if (!cart || cart.cart_item.length === 0) {
             return reply.code(404).send({
                 status: false,
-                message: "Cart not found",
+                message: "Cart is empty or not found",
             });
         }
 
-        // Assuming total_price is stored as string in DB, convert to number
-        // Razorpay anticipates amount in smallest currency unit (paise for INR)
         const amount = Number(cart.total_price);
 
+        // 1. Create Razorpay Order
         const options = {
-            amount: amount * 100, // amount in smallest currency unit
+            amount: amount * 100,
             currency: currency || "INR",
             receipt: `receipt_${Date.now()}`,
         };
 
-        const order = await razorpay.orders.create(options);
+        const razorpayOrder = await razorpay.orders.create(options);
+
+        // 2. Create Pending Order in our Database
+        const order = await prisma.order.create({
+            data: {
+                userId,
+                addressId,
+                total_price: cart.total_price,
+                discounted_price: cart.discounted_price,
+                mrp_price: cart.mrp_price,
+                paymentStatus: "PENDING",
+                razorpayOrderId: razorpayOrder.id,
+                items: {
+                    create: cart.cart_item.map((item) => ({
+                        productId: item.productId,
+                        selected_quantity: item.selected_quantity,
+                        total_price: item.total_price,
+                        discounted_price: item.discounted_price,
+                        mrp_price: item.mrp_price,
+                    })),
+                },
+            },
+        });
 
         reply.code(200).send({
             status: true,
-            data: order,
+            data: razorpayOrder,
+            orderId: order.id
         });
     } catch (error) {
-        console.error("Error creating Razorpay order:", error);
+        console.error("Error creating order:", error);
         reply.code(500).send({
             status: false,
             message: "Something went wrong creating order",
@@ -66,6 +90,7 @@ export const verifyPayment = async (
 ) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = request.body;
+        const userId = (request.user as any).id;
 
         const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -77,14 +102,40 @@ export const verifyPayment = async (
         const isAuthentic = expectedSignature === razorpay_signature;
 
         if (isAuthentic) {
-            // Database update logic here (e.g., create Order, clear Cart)
-            // For now, just return success
+            // Update Order status
+            const order = await prisma.order.updateMany({
+                where: { razorpayOrderId: razorpay_order_id, userId },
+                data: {
+                    paymentStatus: "PAID",
+                    paymentId: razorpay_payment_id,
+                }
+            });
+
+            // Clear Cart
+            await prisma.cartItem.deleteMany({
+                where: { cart: { userId } }
+            });
+
+            await prisma.cart.update({
+                where: { userId },
+                data: {
+                    total_price: "0",
+                    discounted_price: "0",
+                    mrp_price: "0"
+                }
+            });
 
             reply.code(200).send({
                 status: true,
                 message: "Payment verified successfully",
             });
         } else {
+            // Optional: Mark order as FAILED
+            await prisma.order.updateMany({
+                where: { razorpayOrderId: razorpay_order_id, userId },
+                data: { paymentStatus: "FAILED" }
+            });
+
             reply.code(400).send({
                 status: false,
                 message: "Invalid signature",

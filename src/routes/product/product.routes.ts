@@ -5,6 +5,9 @@ import {
   DeleteProduct,
   getSpecificProductData,
   listAllProducts,
+  RestoreProduct,
+  getDailyDeals,
+  toggleDailyDeal,
   UpdateProduct,
 } from "./product.controller";
 
@@ -108,5 +111,58 @@ export async function ProductRoutes(app: FastifyInstance) {
       },
     },
     DeleteProduct
+  );
+
+  app.post(
+    "/restore/:id",
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        params: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+          },
+        },
+        tags: ["Product"],
+        summary: "Restore a deleted product (Admin only)",
+      },
+    },
+    RestoreProduct
+  );
+
+  app.get(
+    "/daily-deals",
+    {
+      schema: {
+        tags: ["Product"],
+        summary: "Get all daily deals",
+      },
+    },
+    getDailyDeals
+  );
+
+  app.post(
+    "/toggle-daily-deal/:id",
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        params: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+          },
+        },
+        body: {
+          type: "object",
+          properties: {
+            isDailyDeals: { type: "boolean" },
+          },
+        },
+        tags: ["Product"],
+        summary: "Add/Remove product from daily deals (Admin only)",
+      },
+    },
+    toggleDailyDeal
   );
 }
