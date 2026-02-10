@@ -147,3 +147,11 @@ model OrderItem {
   discounted_price  String
   mrp_price         String
 }
+
+model Banner {
+  id        String   @id @default(uuid())
+  imageUrl  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}

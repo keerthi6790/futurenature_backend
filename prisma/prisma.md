@@ -106,6 +106,13 @@ erDiagram
   String discounted_price
   String mrp_price
 }
+"Banner" {
+  String id PK
+  String imageUrl
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+}
 "Review" |o--|| "User" : addedBy
 "Review" }o--|| "Product" : Product
 "Address" }o--|| "User" : User
@@ -247,3 +254,13 @@ Properties as follows:
 - `total_price`:
 - `discounted_price`:
 - `mrp_price`:
+
+### `Banner`
+
+Properties as follows:
+
+- `id`:
+- `imageUrl`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
