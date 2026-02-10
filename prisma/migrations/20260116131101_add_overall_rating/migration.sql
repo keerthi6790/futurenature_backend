@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "Product" ADD COLUMN     "overall_rating" DOUBLE PRECISION NOT NULL DEFAULT 0,
-ADD COLUMN     "review_count" INTEGER NOT NULL DEFAULT 0;
