@@ -78,7 +78,7 @@ server.register(fastifyCors, {
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:3002",
-    "https://futurenature-backend.onrender.com",
+    "https://futurenature12.netlify.app",
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
