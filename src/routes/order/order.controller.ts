@@ -56,7 +56,8 @@ export const getMyOrders = async (
                     include: {
                         product: true
                     }
-                }
+                },
+                address: true
             }
         });
 

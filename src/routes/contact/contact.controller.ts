@@ -1,6 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ContactRequest, ContactResponse } from './contact.schema';
-import { emailService } from '../../utils/emailService';
 
 export async function submitContactFormHandler(
     request: FastifyRequest<{
@@ -9,10 +8,10 @@ export async function submitContactFormHandler(
     reply: FastifyReply
 ) {
     try {
-        const contactData = request.body;
+        // const contactData = request.body;
 
         // Send email to admin
-        await emailService.sendContactFormEmail(contactData);
+        // await emailService.sendContactFormEmail(contactData);
 
         const response: ContactResponse = {
             success: true,
