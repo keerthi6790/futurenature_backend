@@ -85,6 +85,7 @@ server.register(fastifyCors, {
     "http://localhost:3001",
     "http://localhost:3002",
     "https://futurenature12.netlify.app",
+    'https://aesthetic-blancmange-954bba.netlify.app'
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
