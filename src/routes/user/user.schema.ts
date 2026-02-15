@@ -35,22 +35,26 @@ export const CreateUserRequestSchema = z.object({
   lastName: z.string({
     required_error: "Last Name is Required",
   }),
+  email: z.string({
+    required_error: "Email is Required",
+  }).email({ message: "Invalid email address" }),
+  dob: z.string({
+    required_error: "Date of Birth is Required",
+  }),
+  isWhatsappOptIn: z.boolean().default(false),
   mobileNumber: z
     .string()
     .regex(/^[6-9]\d{9}$/, { message: "Invalid mobile number. Must be a 10-digit Indian number starting with 6-9." }),
-  password: z
-    .string({
-      required_error: "Password is required",
-    })
-    .min(10, {
-      message: "Atleast 10 characters is required",
-    }),
 });
 
 export const CreateUserResponseSchema = z.object({
+  status: z.boolean(),
   message: z.string({
     required_error: "Message is required",
   }),
+  data: z.object({
+    token: z.string(),
+  }).optional(),
 });
 
 export type ZodTriggerOtpRequestSchema = z.infer<

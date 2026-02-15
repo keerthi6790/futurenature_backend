@@ -19,7 +19,9 @@ model User {
   phone_number    String     @unique
   firstName       String?
   lastName        String?
-  hashed_password String?
+  email String?
+  dob DateTime?
+  isWhatsappOptIn Boolean @default(false)
   is_verified     Boolean    @default(false)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @default(now())
@@ -146,12 +148,4 @@ model OrderItem {
   total_price       String
   discounted_price  String
   mrp_price         String
-}
-
-model Banner {
-  id        String   @id @default(uuid())
-  imageUrl  String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
 }

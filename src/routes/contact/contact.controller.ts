@@ -8,10 +8,7 @@ export async function submitContactFormHandler(
     reply: FastifyReply
 ) {
     try {
-        // const contactData = request.body;
 
-        // Send email to admin
-        // await emailService.sendContactFormEmail(contactData);
 
         const response: ContactResponse = {
             success: true,

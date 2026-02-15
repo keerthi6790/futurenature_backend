@@ -5,7 +5,6 @@ import {
   ZodVerityOtpRequestSchema,
 } from "./user.schema";
 import prisma from "../../utils/Prisma";
-import bcrypt from "bcrypt";
 import { GenerateSixDigitOtp } from "../../utils/GenerateOtp";
 import { Prisma } from "../../generated/prisma/client";
 
@@ -122,24 +121,34 @@ export const RegisterUser = async (
   reply: FastifyReply
 ) => {
   try {
-    const { firstName, lastName, mobileNumber, password } = request.body;
-
-    const hashed_password = await bcrypt.hash(password, 10);
+    const { firstName, lastName, mobileNumber, email, dob, isWhatsappOptIn } = request.body;
 
     // Create new user directly
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         firstName,
         lastName,
-        hashed_password,
+        email,
+        dob: new Date(dob),
+        isWhatsappOptIn,
         phone_number: mobileNumber,
         is_verified: true,
       },
     });
 
+    const payload = {
+      id: user.id,
+      isAdmin: user.isAdmin,
+    };
+
+    const token = request.jwt.sign(payload);
+
     reply.code(201).send({
       status: true,
       message: "User Registered Successfully",
+      data: {
+        token,
+      }
     });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {

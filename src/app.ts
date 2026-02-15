@@ -16,15 +16,11 @@ import contactRoutes from "./routes/contact/contact.route";
 import { contactSchemas } from "./routes/contact/contact.schema";
 import { PaymentRoutes } from "./routes/payment/payment.route";
 import { OrderRoutes } from "./routes/order/order.route";
-import { bannerSchemas } from "./routes/banner/banner.schema";
-import BannerRoutes from "./routes/banner/banner.router";
 import fastifyCors from "@fastify/cors";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 
-import { withRefResolver } from "fastify-zod";
 import { sendSimpleMessage } from "./utils/emailService";
-import { appendOrderToSheet } from "./utils/googleSheets";
 
 const server = fastify({
   bodyLimit: 5 * 1024 * 1024, // 5MB
@@ -108,7 +104,6 @@ for (let schema of [
   ...addressSchema,
   ...cartSchema,
   ...contactSchemas,
-  ...bannerSchemas,
 ]) {
   server.addSchema(schema);
 }
@@ -122,7 +117,6 @@ server.register(wishlistRoutes, { prefix: "api/wishlist" });
 server.register(contactRoutes, { prefix: "api/contact" });
 server.register(PaymentRoutes, { prefix: "api/payment" });
 server.register(OrderRoutes, { prefix: "api/order" });
-server.register(BannerRoutes, { prefix: "api/banner" });
 
 server
   .listen({ port: 8081, host: "0.0.0.0" })

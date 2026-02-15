@@ -13,7 +13,9 @@ erDiagram
   String phone_number UK
   String firstName "nullable"
   String lastName "nullable"
-  String hashed_password "nullable"
+  String email "nullable"
+  DateTime dob "nullable"
+  Boolean isWhatsappOptIn
   Boolean is_verified
   DateTime createdAt
   DateTime updatedAt
@@ -106,13 +108,6 @@ erDiagram
   String discounted_price
   String mrp_price
 }
-"Banner" {
-  String id PK
-  String imageUrl
-  Boolean isActive
-  DateTime createdAt
-  DateTime updatedAt
-}
 "Review" |o--|| "User" : addedBy
 "Review" }o--|| "Product" : Product
 "Address" }o--|| "User" : User
@@ -135,7 +130,9 @@ Properties as follows:
 - `phone_number`:
 - `firstName`:
 - `lastName`:
-- `hashed_password`:
+- `email`:
+- `dob`:
+- `isWhatsappOptIn`:
 - `is_verified`:
 - `createdAt`:
 - `updatedAt`:
@@ -254,13 +251,3 @@ Properties as follows:
 - `total_price`:
 - `discounted_price`:
 - `mrp_price`:
-
-### `Banner`
-
-Properties as follows:
-
-- `id`:
-- `imageUrl`:
-- `isActive`:
-- `createdAt`:
-- `updatedAt`:
