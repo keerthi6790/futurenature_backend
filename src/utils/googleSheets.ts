@@ -54,3 +54,51 @@ export const appendOrderToSheet = async (orderData: {
         // We don't throw here to avoid failing the payment verification if sheet logging fails
     }
 };
+
+
+
+export const appendComments = async (data: {
+    name: string,
+    email: string,
+    message: string,
+    mobile: string
+}) => {
+    try {
+        const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'credentials.json');
+        const credentials = JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_FILE, 'utf8'));
+        const auth = new google.auth.GoogleAuth({
+            credentials,
+            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
+
+        const sheets = google.sheets({ version: "v4", auth });
+
+
+        console.log({ sheets })
+
+        const values = [
+            [
+                data.name,
+                data.email,
+                data.mobile,
+                data.message,
+            ],
+        ];
+
+        const response = await sheets.spreadsheets.values.append({
+            spreadsheetId: '1wmx6JxySOdEoiyA5DqtOk0s_9o73GBTZfPredTPlfhk',
+            range: "Sheet1!A:D", // Assumes logging to Sheet1
+            valueInputOption: "RAW",
+            requestBody: {
+                values,
+            },
+        });
+
+        console.log("Order logged to Google Sheets:", response.data);
+
+        return response
+    } catch (error) {
+        console.error("Error logging order to Google Sheets:", error);
+        // We don't throw here to avoid failing the payment verification if sheet logging fails
+    }
+};

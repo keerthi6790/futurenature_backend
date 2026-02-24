@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { ZodAddProductsRequestSchme, ZodUpdateProductsRequestSchme } from "./product.schema";
 import prisma from "../../utils/Prisma";
+import { uploadToS3 } from "../../utils/s3.utils";
 
 export const AddProducts = async (
   request: FastifyRequest<{ Body: ZodAddProductsRequestSchme }>,
@@ -28,18 +29,27 @@ export const AddProducts = async (
 
     let sellingPrice: number = 0;
     if (discountedType === "percentage") {
-      sellingPrice = +price - +price * (+discountedAmount / 100);
+      sellingPrice = Math.round(+price - +price * (+discountedAmount / 100));
     }
     if (discountedType === "mrp") {
-      sellingPrice = +price - +discountedAmount;
+      sellingPrice = Math.round(+price - +discountedAmount);
     }
+
+    const processedImageUrls = await Promise.all(
+      imageUrl.map(async (img, index) => {
+        if (img.startsWith("data:image/") || img.length > 500) {
+          return await uploadToS3(img, `${productName}-${index}.jpg`);
+        }
+        return img;
+      })
+    );
 
     const data = await prisma.product.create({
       data: {
         product_name: productName,
         description: description,
         price: price,
-        imageUrl: imageUrl,
+        imageUrl: processedImageUrls,
         description_tamil: descriptionTamil,
         discounted_amount: discountedAmount,
         discounted_type: discountedType,
@@ -194,9 +204,7 @@ export const UpdateProduct = async (
     if (productNameTamil) updateData.product_name_tamil = productNameTamil;
     if (description) updateData.description = description;
     if (descriptionTamil) updateData.description_tamil = descriptionTamil;
-    if (imageUrl) updateData.imageUrl = imageUrl;
     if (availableQuantity) updateData.available_quantity = +availableQuantity;
-
     if (price || discountedAmount || discountedType) {
       const finalPrice = price || existingProduct.price;
       const finalDiscountType =
@@ -205,15 +213,29 @@ export const UpdateProduct = async (
         discountedAmount || existingProduct.discounted_amount;
 
       if (finalDiscountType === "percentage") {
-        sellingPrice = +finalPrice - +finalPrice * (+finalDiscountAmount / 100);
+        sellingPrice = Math.round(+finalPrice - +finalPrice * (+finalDiscountAmount / 100));
       } else if (finalDiscountType === "mrp") {
-        sellingPrice = +finalPrice - +finalDiscountAmount;
+        sellingPrice = Math.round(+finalPrice - +finalDiscountAmount);
       }
 
       updateData.price = finalPrice;
       updateData.discounted_type = finalDiscountType;
       updateData.discounted_amount = finalDiscountAmount;
       updateData.selling_price = String(sellingPrice);
+    }
+
+    if (imageUrl) {
+      updateData.imageUrl = await Promise.all(
+        imageUrl.map(async (img, index) => {
+          if (img.startsWith("data:image/") || img.length > 500) {
+            return await uploadToS3(
+              img,
+              `${productName || existingProduct.product_name}-${index}.jpg`
+            );
+          }
+          return img;
+        })
+      );
     }
 
     const updatedProduct = await prisma.product.update({
