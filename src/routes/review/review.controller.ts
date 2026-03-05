@@ -12,7 +12,7 @@ const updateProductRating = async (productId: string) => {
   const overallRating =
     reviewCount > 0
       ? reviews.reduce((acc, curr) => acc + Number(curr.rating), 0) /
-      reviewCount
+        reviewCount
       : 0;
 
   await prisma.product.update({
@@ -31,10 +31,12 @@ export const postAReview = async (
       id: string;
     };
   }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   try {
     const { message, rating } = request.body;
+
+    console.log({ message, rating, user: request.user.id });
 
     const reviewData = await prisma.review.create({
       data: {
@@ -47,15 +49,14 @@ export const postAReview = async (
 
     await updateProductRating(request.params.id);
 
-    console.log({ reviewData });
-
     reply.code(200).send({
       status: true,
       data: reviewData,
       message: "Added Successfully",
     });
   } catch (err: any) {
-    if (err.code === 'P2002') {
+    console.log({ err });
+    if (err.code === "P2002") {
       reply.code(500).send({
         status: false,
         data: { msg: "Already you have posted a review" },
@@ -70,7 +71,7 @@ export const postAReview = async (
 
 export const updateAReview = async (
   request: FastifyRequest<{ Body: ZodAddReviewSchema; Params: { id: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   try {
     const { message, rating } = request.body;
@@ -104,7 +105,7 @@ export const updateAReview = async (
 
 export const deleteAReview = async (
   request: FastifyRequest<{ Params: { reviewId: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   try {
     const { reviewId } = request.params;
@@ -134,7 +135,7 @@ export const deleteAReview = async (
 
 export const listReviewsByProductId = async (
   request: FastifyRequest<{ Params: { id: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   try {
     const reviews = await prisma.review.findMany({

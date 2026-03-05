@@ -7,6 +7,7 @@ import {
 import prisma from "../../utils/Prisma";
 import { GenerateSixDigitOtp } from "../../utils/GenerateOtp";
 import { Prisma } from "../../generated/prisma/client";
+import { OtpSender } from "../../utils/otpService";
 
 export const triggerOtp = async (
   request: FastifyRequest<{ Body: ZodTriggerOtpRequestSchema }>,
@@ -16,6 +17,10 @@ export const triggerOtp = async (
 
   try {
     const generatedOtp = GenerateSixDigitOtp();
+
+    const response = await OtpSender(`91${mobileNumber}`, generatedOtp);
+
+    console.log({ response });
 
     await prisma.otp.upsert({
       where: {
@@ -30,10 +35,17 @@ export const triggerOtp = async (
       },
     });
 
-    reply.code(201).send({
-      status: true,
-      message: `Otp is sent to your ${mobileNumber}`,
-    });
+    if (response?.data.ErrorMessage == "Done") {
+      reply.code(201).send({
+        status: true,
+        message: `Otp is sent to your ${mobileNumber}`,
+      });
+    } else {
+      reply.code(500).send({
+        status: false,
+        message: "OTP is not sent",
+      });
+    }
   } catch (err) {
     reply.code(500).send({
       status: false,
@@ -62,7 +74,7 @@ export const verifyOtp = async (
       });
     }
 
-    if ("111111" === otp) {
+    if (dbData?.otp === otp) {
       const userData = await prisma.user.findUnique({
         where: {
           phone_number: mobileNumber,

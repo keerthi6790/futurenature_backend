@@ -12,6 +12,8 @@ export const addAddress = async (
 ) => {
   try {
     const {
+      receiverName,
+      label,
       address1,
       address2,
       address3,
@@ -25,6 +27,8 @@ export const addAddress = async (
 
     const addressData = await prisma.address.create({
       data: {
+        receiverName,
+        label,
         address1,
         address2,
         address3,
@@ -38,10 +42,11 @@ export const addAddress = async (
       },
     });
 
+    const { phone_number, ...rest } = addressData;
     reply.code(200).send({
       status: true,
       message: "Address Added Successfully",
-      data: addressData,
+      data: { ...rest, mobileNumber: phone_number },
     });
   } catch (err) {
     reply.code(500).send({
@@ -63,6 +68,8 @@ export const editAddress = async (
 ) => {
   try {
     const {
+      receiverName,
+      label,
       address1,
       address2,
       address3,
@@ -80,6 +87,8 @@ export const editAddress = async (
         userId: request.user.id,
       },
       data: {
+        receiverName,
+        label,
         address1,
         address2,
         address3,
@@ -92,9 +101,10 @@ export const editAddress = async (
       },
     });
 
+    const { phone_number, ...rest } = editedAddressData;
     reply.code(200).send({
       status: true,
-      data: editedAddressData,
+      data: { ...rest, mobileNumber: phone_number },
       message: "Edited Successfully",
     });
   } catch (err) {
@@ -123,12 +133,18 @@ export const GetAllUserAddress = async (
     const addressData = await prisma.address.findMany({
       where: {
         userId: request.user.id,
+        isDeleted: false,
       },
+    });
+
+    const mappedAddressData = addressData.map((addr) => {
+      const { phone_number, ...rest } = addr;
+      return { ...rest, mobileNumber: phone_number };
     });
 
     reply.code(200).send({
       status: true,
-      data: addressData,
+      data: mappedAddressData,
       message: "All Address fetched Successfully.",
     });
   } catch (err) {
@@ -149,10 +165,13 @@ export const deleteAddress = async (
   reply: FastifyReply
 ) => {
   try {
-    await prisma.address.delete({
+    await prisma.address.update({
       where: {
         id: request.params.id,
         userId: request.user.id,
+      },
+      data: {
+        isDeleted: true,
       },
     });
 

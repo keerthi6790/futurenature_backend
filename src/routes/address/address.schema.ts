@@ -2,6 +2,8 @@ import { buildJsonSchemas } from "fastify-zod";
 import * as z from "zod";
 
 const AddAddressRequestSchema = z.object({
+  receiverName: z.string().optional(),
+  label: z.string().default("Home"),
   address1: z.string({
     required_error: "Address 1 is mandatory",
   }),
@@ -39,6 +41,8 @@ const AddAddressRequestSchema = z.object({
 });
 
 const EditAddressRequestSchema = z.object({
+  receiverName: z.string().optional(),
+  label: z.string().optional(),
   address1: z
     .string({
       required_error: "Address 1 is mandatory",

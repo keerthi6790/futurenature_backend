@@ -28,7 +28,7 @@ model User {
   isAdmin         Boolean    @default(false)
   address         Address[]
   cart            Cart?
-  posted_review   Review?
+  posted_review   Review[]
   wishlist        Wishlist[]
   orders          Order[]
 }
@@ -65,7 +65,7 @@ model Review {
   id        String  @id @default(uuid())
   reviewId  String
   review    String
-  addedById String  @unique
+  addedById String
   rating    Int
   addedBy   User    @relation(fields: [addedById], references: [id])
   Product   Product @relation(fields: [reviewId], references: [id])
@@ -73,6 +73,8 @@ model Review {
 
 model Address {
   id           String  @id @default(uuid())
+  receiverName String?
+  label        String  @default("Home")
   address1     String
   address2     String
   address3     String
@@ -83,6 +85,7 @@ model Address {
   state        String
   userId       String
   phone_number String
+  isDeleted    Boolean @default(false)
   User         User    @relation(fields: [userId], references: [id])
   orders       Order[]
 }

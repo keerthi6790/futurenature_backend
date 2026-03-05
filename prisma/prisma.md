@@ -47,11 +47,13 @@ erDiagram
   String id PK
   String reviewId FK
   String review
-  String addedById FK,UK
+  String addedById FK
   Int rating
 }
 "Address" {
   String id PK
+  String receiverName "nullable"
+  String label
   String address1
   String address2
   String address3
@@ -62,6 +64,7 @@ erDiagram
   String state
   String userId FK
   String phone_number
+  Boolean isDeleted
 }
 "Cart" {
   String id PK
@@ -108,7 +111,7 @@ erDiagram
   String discounted_price
   String mrp_price
 }
-"Review" |o--|| "User" : addedBy
+"Review" }o--|| "User" : addedBy
 "Review" }o--|| "Product" : Product
 "Address" }o--|| "User" : User
 "Cart" |o--|| "User" : user
@@ -181,6 +184,8 @@ Properties as follows:
 Properties as follows:
 
 - `id`:
+- `receiverName`:
+- `label`:
 - `address1`:
 - `address2`:
 - `address3`:
@@ -191,6 +196,7 @@ Properties as follows:
 - `state`:
 - `userId`:
 - `phone_number`:
+- `isDeleted`:
 
 ### `Cart`
 
