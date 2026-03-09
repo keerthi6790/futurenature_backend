@@ -13,13 +13,13 @@ erDiagram
   String phone_number UK
   String firstName "nullable"
   String lastName "nullable"
-  String email "nullable"
-  DateTime dob "nullable"
-  Boolean isWhatsappOptIn
   Boolean is_verified
   DateTime createdAt
   DateTime updatedAt
   Boolean isAdmin
+  DateTime dob "nullable"
+  String email "nullable"
+  Boolean isWhatsappOptIn
 }
 "Otp" {
   String id PK
@@ -52,8 +52,6 @@ erDiagram
 }
 "Address" {
   String id PK
-  String receiverName "nullable"
-  String label
   String address1
   String address2
   String address3
@@ -64,6 +62,8 @@ erDiagram
   String state
   String userId FK
   String phone_number
+  String label
+  String receiverName "nullable"
   Boolean isDeleted
 }
 "Cart" {
@@ -119,8 +119,8 @@ erDiagram
 "CartItem" }o--|| "Product" : product
 "Wishlist" }o--|| "Product" : product
 "Wishlist" }o--|| "User" : user
-"Order" }o--|| "User" : user
 "Order" }o--|| "Address" : address
+"Order" }o--|| "User" : user
 "OrderItem" }o--|| "Order" : order
 "OrderItem" }o--|| "Product" : product
 ```
@@ -133,13 +133,13 @@ Properties as follows:
 - `phone_number`:
 - `firstName`:
 - `lastName`:
-- `email`:
-- `dob`:
-- `isWhatsappOptIn`:
 - `is_verified`:
 - `createdAt`:
 - `updatedAt`:
 - `isAdmin`:
+- `dob`:
+- `email`:
+- `isWhatsappOptIn`:
 
 ### `Otp`
 
@@ -184,8 +184,6 @@ Properties as follows:
 Properties as follows:
 
 - `id`:
-- `receiverName`:
-- `label`:
 - `address1`:
 - `address2`:
 - `address3`:
@@ -196,6 +194,8 @@ Properties as follows:
 - `state`:
 - `userId`:
 - `phone_number`:
+- `label`:
+- `receiverName`:
 - `isDeleted`:
 
 ### `Cart`

@@ -19,18 +19,18 @@ model User {
   phone_number    String     @unique
   firstName       String?
   lastName        String?
-  email String?
-  dob DateTime?
-  isWhatsappOptIn Boolean @default(false)
   is_verified     Boolean    @default(false)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @default(now())
   isAdmin         Boolean    @default(false)
+  dob             DateTime?
+  email           String?
+  isWhatsappOptIn Boolean    @default(false)
   address         Address[]
   cart            Cart?
+  orders          Order[]
   posted_review   Review[]
   wishlist        Wishlist[]
-  orders          Order[]
 }
 
 model Otp {
@@ -40,25 +40,25 @@ model Otp {
 }
 
 model Product {
-  id                 String     @id @default(uuid())
+  id                 String      @id @default(uuid())
   product_name       String
   description        String
   imageUrl           String[]
   price              String
-  available_quantity Int        @default(5)
+  available_quantity Int         @default(5)
   description_tamil  String
   discounted_amount  String
   discounted_type    String
   product_name_tamil String
   selling_price      String
-  overall_rating     Float      @default(0)
-  review_count       Int        @default(0)
-  isDailyDeals       Boolean    @default(false)
-  isDeleted          Boolean    @default(false)
-  reviews            Review[]
-  wishlistedBy       Wishlist[]
+  overall_rating     Float       @default(0)
+  review_count       Int         @default(0)
+  isDailyDeals       Boolean     @default(false)
+  isDeleted          Boolean     @default(false)
   cart               CartItem[]
   order_items        OrderItem[]
+  reviews            Review[]
+  wishlistedBy       Wishlist[]
 }
 
 model Review {
@@ -73,8 +73,6 @@ model Review {
 
 model Address {
   id           String  @id @default(uuid())
-  receiverName String?
-  label        String  @default("Home")
   address1     String
   address2     String
   address3     String
@@ -85,6 +83,8 @@ model Address {
   state        String
   userId       String
   phone_number String
+  label        String  @default("Home")
+  receiverName String?
   isDeleted    Boolean @default(false)
   User         User    @relation(fields: [userId], references: [id])
   orders       Order[]
@@ -96,13 +96,13 @@ model Cart {
   discounted_price String
   mrp_price        String
   userId           String     @unique
+  createdAt        DateTime   @default(now())
   user             User       @relation(fields: [userId], references: [id])
   cart_item        CartItem[]
-  createdAt        DateTime   @default(now())
 }
 
 model CartItem {
-  id                String @id @default(uuid())
+  id                String  @id @default(uuid())
   selected_quantity String
   total_price       String
   discounted_price  String
@@ -125,30 +125,30 @@ model Wishlist {
 }
 
 model Order {
-  id              String      @id @default(uuid())
-  userId          String
-  user            User        @relation(fields: [userId], references: [id])
-  total_price     String
+  id               String      @id @default(uuid())
+  userId           String
+  total_price      String
   discounted_price String
-  mrp_price       String
-  paymentStatus   String      @default("PENDING") // PENDING, PAID, FAILED
-  paymentId       String?
-  razorpayOrderId String?
-  addressId       String
-  address         Address     @relation(fields: [addressId], references: [id])
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @default(now()) @updatedAt
-  items           OrderItem[]
+  mrp_price        String
+  paymentStatus    String      @default("PENDING")
+  paymentId        String?
+  razorpayOrderId  String?
+  addressId        String
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @default(now()) @updatedAt
+  address          Address     @relation(fields: [addressId], references: [id])
+  user             User        @relation(fields: [userId], references: [id])
+  items            OrderItem[]
 }
 
 model OrderItem {
   id                String  @id @default(uuid())
   orderId           String
-  order             Order   @relation(fields: [orderId], references: [id])
   productId         String
-  product           Product @relation(fields: [productId], references: [id])
   selected_quantity String
   total_price       String
   discounted_price  String
   mrp_price         String
+  order             Order   @relation(fields: [orderId], references: [id])
+  product           Product @relation(fields: [productId], references: [id])
 }
