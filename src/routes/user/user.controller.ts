@@ -187,3 +187,38 @@ export const RegisterUser = async (
     });
   }
 };
+
+export const getUserData = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const userId = (request.user as any).id;
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      reply.code(500).send({
+        status: false,
+        message: "User Id not found",
+      });
+    }
+    reply.code(200).send({
+      status: true,
+      message: "User Data Fetched Successfully",
+      data: {
+        user,
+      },
+    });
+  } catch (err) {
+    reply.code(500).send({
+      status: false,
+      data: err,
+      message: "Error",
+    });
+  }
+};

@@ -1,5 +1,10 @@
 import { FastifyInstance } from "fastify";
-import { RegisterUser, triggerOtp, verifyOtp } from "./user.controller";
+import {
+  getUserData,
+  RegisterUser,
+  triggerOtp,
+  verifyOtp,
+} from "./user.controller";
 import { $ref } from "./user.schema";
 
 export async function UserRoutes(app: FastifyInstance) {
@@ -17,7 +22,7 @@ export async function UserRoutes(app: FastifyInstance) {
           "Generates a 6-digit OTP and saves/updates it in the database using `prisma.otp.upsert`.",
       },
     },
-    triggerOtp
+    triggerOtp,
   );
 
   app.post(
@@ -31,7 +36,7 @@ export async function UserRoutes(app: FastifyInstance) {
           "Verifies the OTP against the database (`prisma.otp.findUnique`). If valid, it either finds an existing user (`prisma.user.findUnique`) or creates a new one (`prisma.user.create`). Returns a JWT token.",
       },
     },
-    verifyOtp
+    verifyOtp,
   );
 
   app.post(
@@ -48,6 +53,14 @@ export async function UserRoutes(app: FastifyInstance) {
           "Updates the user's profile with first name, last name, and hashed password using `prisma.user.update`. Requires authentication.",
       },
     },
-    RegisterUser
+    RegisterUser,
+  );
+
+  app.get(
+    "/userData",
+    {
+      preHandler: [app.authenticate],
+    },
+    getUserData,
   );
 }
