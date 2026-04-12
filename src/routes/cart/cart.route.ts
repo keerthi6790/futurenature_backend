@@ -3,6 +3,7 @@ import {
   addProductsToCart,
   deleteCartItem,
   getAllCartItem,
+  updateAddressToCart,
   updateCartItemQuantity,
 } from "./cart.controller";
 import { $ref } from "./cart.schema";
@@ -20,7 +21,7 @@ export const CartRoutes = async (app: FastifyInstance) => {
           "Adds products to the user's cart. Involves `prisma.cart.upsert` and `prisma.cartItem.upsert`.",
       },
     },
-    addProductsToCart
+    addProductsToCart,
   );
 
   app.get(
@@ -34,7 +35,7 @@ export const CartRoutes = async (app: FastifyInstance) => {
           "Fetches all items in the user's cart using `prisma.cart.findUnique` with `include`.",
       },
     },
-    getAllCartItem
+    getAllCartItem,
   );
 
   app.delete(
@@ -49,7 +50,7 @@ export const CartRoutes = async (app: FastifyInstance) => {
           "Removes an item from the user's cart using `prisma.cartItem.delete`.",
       },
     },
-    deleteCartItem
+    deleteCartItem,
   );
 
   app.put(
@@ -64,6 +65,21 @@ export const CartRoutes = async (app: FastifyInstance) => {
           "Updates the quantity of an item in the user's cart and recalculates totals.",
       },
     },
-    updateCartItemQuantity
+    updateCartItemQuantity,
+  );
+
+  app.put(
+    "/update-address",
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        body: $ref("UpdateAddressToCart"),
+        tags: ["Cart"],
+        summary: "Update item quantity in cart",
+        description:
+          "Updates the quantity of an item in the user's cart and recalculates totals.",
+      },
+    },
+    updateAddressToCart,
   );
 };

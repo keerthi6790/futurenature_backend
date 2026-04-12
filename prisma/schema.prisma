@@ -88,17 +88,21 @@ model Address {
   isDeleted    Boolean @default(false)
   User         User    @relation(fields: [userId], references: [id])
   orders       Order[]
+  Cart   Cart[]
 }
 
 model Cart {
   id               String     @id @default(uuid())
   total_price      String
   discounted_price String
+  shippingPrice String @default("0")
   mrp_price        String
   userId           String     @unique
   createdAt        DateTime   @default(now())
   user             User       @relation(fields: [userId], references: [id])
   cart_item        CartItem[]
+  addressId String?
+  address          Address?     @relation(fields: [addressId], references: [id])
 }
 
 model CartItem {
@@ -129,6 +133,7 @@ model Order {
   userId           String
   total_price      String
   discounted_price String
+  shippingPrice String @default("0")
   mrp_price        String
   paymentStatus    String      @default("PENDING")
   paymentId        String?

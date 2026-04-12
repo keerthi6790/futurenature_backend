@@ -70,9 +70,11 @@ erDiagram
   String id PK
   String total_price
   String discounted_price
+  String shippingPrice
   String mrp_price
   String userId FK,UK
   DateTime createdAt
+  String addressId FK "nullable"
 }
 "CartItem" {
   String id PK
@@ -94,6 +96,7 @@ erDiagram
   String userId FK
   String total_price
   String discounted_price
+  String shippingPrice
   String mrp_price
   String paymentStatus
   String paymentId "nullable"
@@ -115,6 +118,7 @@ erDiagram
 "Review" }o--|| "Product" : Product
 "Address" }o--|| "User" : User
 "Cart" |o--|| "User" : user
+"Cart" }o--o| "Address" : address
 "CartItem" }o--|| "Cart" : cart
 "CartItem" }o--|| "Product" : product
 "Wishlist" }o--|| "Product" : product
@@ -205,9 +209,11 @@ Properties as follows:
 - `id`:
 - `total_price`:
 - `discounted_price`:
+- `shippingPrice`:
 - `mrp_price`:
 - `userId`:
 - `createdAt`:
+- `addressId`:
 
 ### `CartItem`
 
@@ -238,6 +244,7 @@ Properties as follows:
 - `userId`:
 - `total_price`:
 - `discounted_price`:
+- `shippingPrice`:
 - `mrp_price`:
 - `paymentStatus`:
 - `paymentId`:

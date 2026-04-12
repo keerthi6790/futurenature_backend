@@ -29,6 +29,15 @@ const UpdateCartQuantityRequestSchema = z.object({
   }),
 });
 
+const UpdateAddressToCart = z.object({
+  cartId: z.string({
+    required_error: "Cart Id is mandatory",
+  }),
+  addressId: z.string({
+    required_error: "Cart Id is mandatory",
+  }),
+});
+
 export type ZodAddCartRequestSchema = z.infer<typeof AddCartRequestSchema>;
 export type ZodDeleteCartRequestSchema = z.infer<
   typeof DeleteCartRequestSchema
@@ -36,12 +45,14 @@ export type ZodDeleteCartRequestSchema = z.infer<
 export type ZodUpdateCartQuantityRequestSchema = z.infer<
   typeof UpdateCartQuantityRequestSchema
 >;
+export type ZODUpdateAddressToCart = z.infer<typeof UpdateAddressToCart>;
 
 export const { schemas: cartSchema, $ref } = buildJsonSchemas(
   {
     AddCartRequestSchema,
     DeleteCartRequestSchema,
     UpdateCartQuantityRequestSchema,
+    UpdateAddressToCart,
   },
-  { $id: "cartSchema" }
+  { $id: "cartSchema" },
 );

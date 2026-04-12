@@ -6,7 +6,10 @@ export const OtpSender = async (phonenumber: string, otp: number) => {
         method: "GET",
       },
     )
-      .then((res) => res.json())
+      .then((res) => {
+        console.log({ otpSneder: res });
+        res.json();
+      })
       .catch((err) => err);
 
     console.log({ response });
