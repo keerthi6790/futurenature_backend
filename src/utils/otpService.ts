@@ -7,12 +7,9 @@ export const OtpSender = async (phonenumber: string, otp: number) => {
       },
     )
       .then((res) => {
-        console.log({ otpSneder: res });
-        res.json();
+        return res.json();
       })
       .catch((err) => err);
-
-    console.log({ response });
 
     return { status: true, data: response };
   } catch (err) {
