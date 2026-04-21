@@ -191,8 +191,19 @@ export const addProductsToCart = async (
         { totalDiscounted: 0, totalMrp: 0, totalSelling: 0, quantity: 0 },
       );
 
-      const shippingPrice =
-        existingcartData?.address?.state === "Tamil Nadu" ? 50 : 60;
+      const data = await prisma.constants.findMany();
+
+      const isFreeDelivery =
+        data?.find((da) => da.id === "1")?.boolean === "TRUE";
+      const tamilNadu = data?.find((da) => da.id === "2")?.boolean || "0";
+      const outSideTamilnadu =
+        data?.find((da) => da.id === "3")?.boolean || "0";
+
+      const shippingPrice = isFreeDelivery
+        ? 0
+        : existingcartData?.address?.state === "Tamil Nadu"
+          ? +tamilNadu
+          : +outSideTamilnadu;
 
       cartData = await prisma.cart.update({
         where: { id: finalCartId },
@@ -431,8 +442,19 @@ export const deleteCartItem = async (
         },
       });
 
-      const shippingPrice =
-        exisitingCartData?.address?.state === "Tamil Nadu" ? 50 : 60;
+      const data = await prisma.constants.findMany();
+
+      const isFreeDelivery =
+        data?.find((da) => da.id === "1")?.boolean === "TRUE";
+      const tamilNadu = data?.find((da) => da.id === "2")?.boolean || "0";
+      const outSideTamilnadu =
+        data?.find((da) => da.id === "3")?.boolean || "0";
+
+      const shippingPrice = isFreeDelivery
+        ? 0
+        : exisitingCartData?.address?.state === "Tamil Nadu"
+          ? +tamilNadu
+          : +outSideTamilnadu;
 
       const cartData = await prisma.cart.update({
         where: {
@@ -590,8 +612,18 @@ export const updateCartItemQuantity = async (
       },
     });
 
-    const shippingPrice =
-      exisitingCartData?.address?.state === "Tamil Nadu" ? 50 : 60;
+    const data = await prisma.constants.findMany();
+
+    const isFreeDelivery =
+      data?.find((da) => da.id === "1")?.boolean === "TRUE";
+    const tamilNadu = data?.find((da) => da.id === "2")?.boolean || "0";
+    const outSideTamilnadu = data?.find((da) => da.id === "3")?.boolean || "0";
+
+    const shippingPrice = isFreeDelivery
+      ? 0
+      : exisitingCartData?.address?.state === "Tamil Nadu"
+        ? +tamilNadu
+        : +outSideTamilnadu;
 
     const cartData = await prisma.cart.update({
       where: { id: cartId },
@@ -675,9 +707,22 @@ export const updateAddressToCart = async (
       { totalDiscounted: 0, totalMrp: 0, totalSelling: 0, quantity: 0 },
     );
 
-    const shippingPrice = address?.state === "Tamil Nadu" ? 50 : 60;
+    const data = await prisma.constants.findMany();
+
+    const isFreeDelivery =
+      data?.find((da) => da.id === "1")?.boolean === "TRUE";
+    const tamilNadu = data?.find((da) => da.id === "2")?.boolean || "0";
+    const outSideTamilnadu = data?.find((da) => da.id === "3")?.boolean || "0";
+
+    const shippingPrice = isFreeDelivery
+      ? 0
+      : address?.state === "Tamil Nadu"
+        ? +tamilNadu
+        : +outSideTamilnadu;
 
     const totalShippingPrice = shippingPrice * totals.quantity;
+
+    console.log({ shippingPrice, totalShippingPrice });
 
     await prisma.cart.update({
       where: {

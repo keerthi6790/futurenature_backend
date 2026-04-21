@@ -21,6 +21,7 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 
 import { sendSimpleMessage } from "./utils/emailService";
+import { ConstantsRoutes } from "./routes/constants/constants.route";
 
 const server = fastify({
   bodyLimit: 5 * 1024 * 1024, // 5MB
@@ -114,6 +115,7 @@ server.register(AddressRoutes, { prefix: "api/address" });
 server.register(CartRoutes, { prefix: "api/cart" });
 server.register(wishlistRoutes, { prefix: "api/wishlist" });
 server.register(contactRoutes, { prefix: "api/contact" });
+server.register(ConstantsRoutes, { prefix: "api/constants" });
 server.register(PaymentRoutes, { prefix: "api/payment" });
 server.register(OrderRoutes, { prefix: "api/order" });
 
