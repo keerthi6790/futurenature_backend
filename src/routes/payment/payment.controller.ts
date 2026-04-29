@@ -175,6 +175,7 @@ export const verifyPayment = async (
             }),
           };
 
+          console.log({ orderData });
           // Log to Google Sheets
           await appendOrderToSheet(orderData);
         }
