@@ -17,3 +17,12 @@ declare module "fastify-jwt" {
     user: UserPayload;
   }
 }
+
+declare module "googleapis" {
+  google: any;
+}
+
+declare module "@aws-sdk/client-s3" {
+  PutObjectCommand: any;
+  S3Client: any;
+}
