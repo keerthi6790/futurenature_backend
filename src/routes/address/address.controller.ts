@@ -4,11 +4,11 @@ import {
   ZodEditAddressRequestSchema,
 } from "./address.schema";
 import prisma from "../../utils/Prisma";
-import { Prisma } from "../../generated/prisma/client";
+import { Prisma } from "@prisma/client";
 
 export const addAddress = async (
   request: FastifyRequest<{ Body: ZodAddAddressRequestSchema }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   try {
     const {
@@ -64,7 +64,7 @@ export const editAddress = async (
     };
     Body: ZodEditAddressRequestSchema;
   }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   try {
     const {
@@ -127,7 +127,7 @@ export const editAddress = async (
 
 export const GetAllUserAddress = async (
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   try {
     const addressData = await prisma.address.findMany({
@@ -162,7 +162,7 @@ export const deleteAddress = async (
       id: string;
     };
   }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   try {
     await prisma.address.update({

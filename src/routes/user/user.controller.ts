@@ -6,7 +6,7 @@ import {
 } from "./user.schema";
 import prisma from "../../utils/Prisma";
 import { GenerateSixDigitOtp } from "../../utils/GenerateOtp";
-import { Prisma } from "../../generated/prisma/client";
+import { Prisma } from "@prisma/client";
 import { OtpSender } from "../../utils/otpService";
 
 export const triggerOtp = async (
