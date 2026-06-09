@@ -44,6 +44,7 @@ export const triggerOtp = async (
       reply.code(500).send({
         status: false,
         message: "OTP is not sent",
+        data: response,
       });
     }
   } catch (err) {
