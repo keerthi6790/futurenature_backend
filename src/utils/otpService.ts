@@ -13,6 +13,14 @@ export const OtpSender = async (phonenumber: string, otp: number) => {
 
     return { status: true, data: response };
   } catch (err) {
-    return { status: false, data: err };
+    return {
+      status: false,
+      data: err,
+      console: {
+        env: process.env.SMS_USERNAME,
+        password: process.env.SMS_PASSWORD,
+        id: process.env.SMS_SENDERID,
+      },
+    };
   }
 };
