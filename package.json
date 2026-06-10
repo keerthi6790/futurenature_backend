@@ -26,6 +26,7 @@
     "fastify-zod": "^1.4.0",
     "googleapis": "^171.4.0",
     "mailgun.js": "^12.7.0",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.13",
     "razorpay": "^2.9.6",
     "zod": "^3.25.76",

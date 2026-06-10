@@ -1,7 +1,10 @@
+import fetch from "node-fetch";
+
 export const OtpSender = async (phonenumber: string, otp: number) => {
+  console.log({ phonenumber, otp });
   try {
     const response = await fetch(
-      `http://indiasmstalks.in/api/mt/SendSMS?user=${process.env.SMS_USERNAME}&password=${process.env.SMS_PASSWORD}&senderid=${process.env.SMS_SENDERID}&channel=Trans&DCS=0&flashsms=0&number=${phonenumber}&text=Dear ${otp} is your verification code.For your security,do not share this code -INTAKS THINK COMMUNICATION SERVICES&route=15&DLTTemplateId=1707175929910548838`,
+      `http://indiasmstalks.in/api/mt/SendSMS?user=${process.env.SMS_USERNAME}&password=${process.env.SMS_PASSWORD}&senderid=${process.env.SMS_SENDERID}&channel=Trans&DCS=0&flashsms=0&number=${phonenumber}&text=Dear ${String(otp)} is your verification code.For your security,do not share this code -INTAKS THINK COMMUNICATION SERVICES&route=15&DLTTemplateId=1707175929910548838`,
       {
         method: "GET",
       },
@@ -11,16 +14,10 @@ export const OtpSender = async (phonenumber: string, otp: number) => {
       })
       .catch((err) => err);
 
+    console.log({ response });
+
     return { status: true, data: response };
   } catch (err) {
-    return {
-      status: false,
-      data: err,
-      console: {
-        env: process.env.SMS_USERNAME,
-        password: process.env.SMS_PASSWORD,
-        id: process.env.SMS_SENDERID,
-      },
-    };
+    return { status: false, data: err };
   }
 };
