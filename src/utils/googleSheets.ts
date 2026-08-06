@@ -13,10 +13,20 @@ export const appendOrderToSheet = async (orderData: {
   timestamp: string;
 }) => {
   try {
-    const SERVICE_ACCOUNT_FILE = path.join(__dirname, "credentials.json");
-    const credentials = JSON.parse(
-      fs.readFileSync(SERVICE_ACCOUNT_FILE, "utf8"),
-    );
+    const credentials = {
+      type: process.env.TYPE,
+      project_id: process.env.PROJECT_ID,
+      private_key_id: process.env.PRIVATE_KEY_ID,
+      private_key: process.env.PRIVATE_KEY,
+      client_email: process.env.CLIENT_EMAIL,
+      client_id: process.env.CLIENT_ID,
+      auth_uri: process.env.AUTH_URI,
+      token_uri: process.env.TOKEN_URI,
+      auth_provider_x509_cert_url: process.env.AUTH_PROVIDER_X509_CERT_URL,
+      client_x509_cert_url: process.env.CLIENT_X509_CERT_URL,
+      universe_domain: process.env.UNIVERSE_DOMAIN,
+    };
+    console.log({ credentials });
     const auth = new google.auth.GoogleAuth({
       credentials,
       scopes: ["https://www.googleapis.com/auth/spreadsheets"],
@@ -40,7 +50,7 @@ export const appendOrderToSheet = async (orderData: {
     ];
 
     const response = await sheets.spreadsheets.values.append({
-      spreadsheetId: "17WJe0ZKbJwA4CwHAvlFUHkI_RbngAOXI5sjXCns6IAQ",
+      spreadsheetId: "1xxjmcyQ0_eOeJ-NuXv38-RM7tGxudV_SRMCFjbNrevk",
       range: "Sheet1!A:H", // Assumes logging to Sheet1
       valueInputOption: "RAW",
       requestBody: {
@@ -57,7 +67,7 @@ export const appendOrderToSheet = async (orderData: {
 
     console.log({ whatsappResponse });
 
-    console.log("Order logged to Google Sheets:", response.data);
+    console.log("Order logged to Google Sheets:", response);
   } catch (error) {
     console.error("Error logging order to Google Sheets:", error);
     // We don't throw here to avoid failing the payment verification if sheet logging fails
