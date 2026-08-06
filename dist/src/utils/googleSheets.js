@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -17,17 +50,38 @@ const buffer_1 = require("buffer");
 const googleapis_1 = require("googleapis");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
-const node_fetch_1 = __importDefault(require("node-fetch"));
-const { Headers: NodeFetchHeaders } = require("node-fetch");
-const globalWithFetch = globalThis;
-if (typeof globalWithFetch.Headers === "undefined") {
-    globalWithFetch.Headers = NodeFetchHeaders;
+const node_fetch_1 = __importStar(require("node-fetch"));
+const globalCompat = globalThis;
+if (typeof globalCompat.fetch === "undefined") {
+    globalCompat.fetch = node_fetch_1.default;
 }
-if (typeof globalWithFetch.Blob === "undefined") {
-    globalWithFetch.Blob = buffer_1.Blob;
+if (typeof globalCompat.Headers === "undefined") {
+    globalCompat.Headers = node_fetch_1.Headers;
 }
-if (typeof globalWithFetch.fetch === "undefined") {
-    globalWithFetch.fetch = node_fetch_1.default;
+if (typeof globalCompat.Request === "undefined") {
+    globalCompat.Request = node_fetch_1.Request;
+}
+if (typeof globalCompat.Response === "undefined") {
+    globalCompat.Response = node_fetch_1.Response;
+}
+if (typeof globalCompat.Blob === "undefined") {
+    globalCompat.Blob = buffer_1.Blob;
+}
+if (typeof globalCompat.FormData === "undefined") {
+    try {
+        globalCompat.FormData = require("undici").FormData;
+    }
+    catch (_a) {
+        globalCompat.FormData = undefined;
+    }
+}
+if (typeof globalCompat.ReadableStream === "undefined") {
+    try {
+        globalCompat.ReadableStream = require("stream/web").ReadableStream;
+    }
+    catch (_b) {
+        globalCompat.ReadableStream = undefined;
+    }
 }
 const appendOrderToSheet = (orderData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -44,7 +98,6 @@ const appendOrderToSheet = (orderData) => __awaiter(void 0, void 0, void 0, func
             client_x509_cert_url: process.env.CLIENT_X509_CERT_URL,
             universe_domain: process.env.UNIVERSE_DOMAIN,
         };
-        console.log({ credentials });
         const auth = new googleapis_1.google.auth.GoogleAuth({
             credentials,
             scopes: ["https://www.googleapis.com/auth/spreadsheets"],

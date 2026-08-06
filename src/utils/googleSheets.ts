@@ -2,28 +2,56 @@ import { Blob as NodeBlob } from "buffer";
 import { google } from "googleapis";
 import fs from "fs";
 import path from "path";
-import fetch from "node-fetch";
+import fetch, {
+  Headers as NodeHeaders,
+  Request as NodeRequest,
+  Response as NodeResponse,
+} from "node-fetch";
 
-const { Headers: NodeFetchHeaders } = require("node-fetch") as {
-  Headers: typeof globalThis.Headers;
-};
-
-const globalWithFetch = globalThis as typeof globalThis & {
-  Blob?: typeof globalThis.Blob;
-  Headers?: typeof globalThis.Headers;
+const globalCompat = globalThis as typeof globalThis & {
+  Blob?: any;
+  FormData?: any;
+  Headers?: any;
+  ReadableStream?: any;
+  Request?: any;
+  Response?: any;
   fetch?: any;
 };
 
-if (typeof globalWithFetch.Headers === "undefined") {
-  globalWithFetch.Headers = NodeFetchHeaders;
+if (typeof globalCompat.fetch === "undefined") {
+  globalCompat.fetch = fetch as any;
 }
 
-if (typeof globalWithFetch.Blob === "undefined") {
-  globalWithFetch.Blob = NodeBlob as unknown as typeof globalThis.Blob;
+if (typeof globalCompat.Headers === "undefined") {
+  globalCompat.Headers = NodeHeaders as any;
 }
 
-if (typeof globalWithFetch.fetch === "undefined") {
-  globalWithFetch.fetch = fetch;
+if (typeof globalCompat.Request === "undefined") {
+  globalCompat.Request = NodeRequest as any;
+}
+
+if (typeof globalCompat.Response === "undefined") {
+  globalCompat.Response = NodeResponse as any;
+}
+
+if (typeof globalCompat.Blob === "undefined") {
+  globalCompat.Blob = NodeBlob as any;
+}
+
+if (typeof globalCompat.FormData === "undefined") {
+  try {
+    globalCompat.FormData = require("undici").FormData;
+  } catch {
+    globalCompat.FormData = undefined;
+  }
+}
+
+if (typeof globalCompat.ReadableStream === "undefined") {
+  try {
+    globalCompat.ReadableStream = require("stream/web").ReadableStream;
+  } catch {
+    globalCompat.ReadableStream = undefined;
+  }
 }
 
 export const appendOrderToSheet = async (orderData: {
@@ -50,7 +78,6 @@ export const appendOrderToSheet = async (orderData: {
       client_x509_cert_url: process.env.CLIENT_X509_CERT_URL,
       universe_domain: process.env.UNIVERSE_DOMAIN,
     };
-    console.log({ credentials });
     const auth = new google.auth.GoogleAuth({
       credentials,
       scopes: ["https://www.googleapis.com/auth/spreadsheets"],
