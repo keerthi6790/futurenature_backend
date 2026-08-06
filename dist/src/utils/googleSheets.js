@@ -46,7 +46,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.appendComments = exports.appendOrderToSheet = void 0;
-const buffer_1 = require("buffer");
 const googleapis_1 = require("googleapis");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
@@ -65,7 +64,39 @@ if (typeof globalCompat.Response === "undefined") {
     globalCompat.Response = node_fetch_1.Response;
 }
 if (typeof globalCompat.Blob === "undefined") {
-    globalCompat.Blob = buffer_1.Blob;
+    class PolyfilledBlob {
+        constructor(parts = [], options = {}) {
+            var _a;
+            const chunks = parts.map((part) => {
+                if (typeof part === "string") {
+                    return Buffer.from(part);
+                }
+                if (part instanceof ArrayBuffer) {
+                    return Buffer.from(part);
+                }
+                if (part instanceof Uint8Array) {
+                    return Buffer.from(part);
+                }
+                return Buffer.from(part);
+            });
+            this.buffer = Buffer.concat(chunks);
+            this.type = (_a = options.type) !== null && _a !== void 0 ? _a : "";
+        }
+        get size() {
+            return this.buffer.length;
+        }
+        text() {
+            return __awaiter(this, void 0, void 0, function* () {
+                return this.buffer.toString("utf8");
+            });
+        }
+        arrayBuffer() {
+            return __awaiter(this, void 0, void 0, function* () {
+                return this.buffer.buffer.slice(this.buffer.byteOffset, this.buffer.byteOffset + this.buffer.byteLength);
+            });
+        }
+    }
+    globalCompat.Blob = PolyfilledBlob;
 }
 if (typeof globalCompat.FormData === "undefined") {
     try {

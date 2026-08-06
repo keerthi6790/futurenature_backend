@@ -1,4 +1,3 @@
-import { Blob as NodeBlob } from "buffer";
 import { google } from "googleapis";
 import fs from "fs";
 import path from "path";
@@ -35,7 +34,51 @@ if (typeof globalCompat.Response === "undefined") {
 }
 
 if (typeof globalCompat.Blob === "undefined") {
-  globalCompat.Blob = NodeBlob as any;
+  class PolyfilledBlob {
+    public readonly type: string;
+    private readonly buffer: Buffer;
+
+    constructor(
+      parts: Array<string | ArrayBuffer | Buffer | Uint8Array> = [],
+      options: { type?: string } = {},
+    ) {
+      const chunks = parts.map((part) => {
+        if (typeof part === "string") {
+          return Buffer.from(part);
+        }
+
+        if (part instanceof ArrayBuffer) {
+          return Buffer.from(part);
+        }
+
+        if (part instanceof Uint8Array) {
+          return Buffer.from(part);
+        }
+
+        return Buffer.from(part);
+      });
+
+      this.buffer = Buffer.concat(chunks);
+      this.type = options.type ?? "";
+    }
+
+    get size() {
+      return this.buffer.length;
+    }
+
+    async text() {
+      return this.buffer.toString("utf8");
+    }
+
+    async arrayBuffer() {
+      return this.buffer.buffer.slice(
+        this.buffer.byteOffset,
+        this.buffer.byteOffset + this.buffer.byteLength,
+      );
+    }
+  }
+
+  globalCompat.Blob = PolyfilledBlob as any;
 }
 
 if (typeof globalCompat.FormData === "undefined") {
