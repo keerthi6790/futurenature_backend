@@ -50,7 +50,7 @@ export const appendOrderToSheet = async (orderData: {
     ];
 
     const response = await sheets.spreadsheets.values.append({
-      spreadsheetId: "1xxjmcyQ0_eOeJ-NuXv38-RM7tGxudV_SRMCFjbNrevk",
+      spreadsheetId: "17WJe0ZKbJwA4CwHAvlFUHkI_RbngAOXI5sjXCns6IAQ",
       range: "Sheet1!A:H", // Assumes logging to Sheet1
       valueInputOption: "RAW",
       requestBody: {
