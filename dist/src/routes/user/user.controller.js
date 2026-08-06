@@ -45,6 +45,7 @@ const triggerOtp = (request, reply) => __awaiter(void 0, void 0, void 0, functio
             reply.code(500).send({
                 status: false,
                 message: "OTP is not sent",
+                data: response,
             });
         }
     }

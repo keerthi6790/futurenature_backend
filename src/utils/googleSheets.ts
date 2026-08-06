@@ -1,6 +1,24 @@
 import { google } from "googleapis";
 import fs from "fs";
 import path from "path";
+import fetch from "node-fetch";
+
+const { Headers: NodeFetchHeaders } = require("node-fetch") as {
+  Headers: typeof globalThis.Headers;
+};
+
+const globalWithFetch = globalThis as typeof globalThis & {
+  Headers?: typeof globalThis.Headers;
+  fetch?: any;
+};
+
+if (typeof globalWithFetch.Headers === "undefined") {
+  globalWithFetch.Headers = NodeFetchHeaders;
+}
+
+if (typeof globalWithFetch.fetch === "undefined") {
+  globalWithFetch.fetch = fetch;
+}
 
 export const appendOrderToSheet = async (orderData: {
   orderId: string;

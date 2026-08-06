@@ -35,6 +35,7 @@ const swagger_1 = __importDefault(require("@fastify/swagger"));
 const swagger_ui_1 = __importDefault(require("@fastify/swagger-ui"));
 const emailService_1 = require("./utils/emailService");
 const constants_route_1 = require("./routes/constants/constants.route");
+const googleSheets_1 = require("./utils/googleSheets");
 const server = (0, fastify_1.default)({
     bodyLimit: 5 * 1024 * 1024, // 5MB
 });
@@ -95,6 +96,24 @@ server.get("/", (request, reply) => __awaiter(void 0, void 0, void 0, function* 
 server.get("/mail", (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, emailService_1.sendSimpleMessage)();
     reply.code(200).send("Mail sent");
+}));
+server.post("/appendToSheet", (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = yield (0, googleSheets_1.appendOrderToSheet)({
+            address: "asdas",
+            customerEmail: "nadkaldsd@gmai.com",
+            customerName: "Djkasd",
+            items: "asdsd",
+            orderId: "asdasd",
+            timestamp: "",
+            totalAmount: "2323",
+            transactionId: "asdsd",
+        });
+        reply.code(200).send(result);
+    }
+    catch (err) {
+        reply.code(500).send(err);
+    }
 }));
 for (let schema of [
     ...user_schema_1.userSchemas,

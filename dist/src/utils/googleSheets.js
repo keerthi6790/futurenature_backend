@@ -16,10 +16,31 @@ exports.appendComments = exports.appendOrderToSheet = void 0;
 const googleapis_1 = require("googleapis");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const node_fetch_1 = __importDefault(require("node-fetch"));
+const { Headers: NodeFetchHeaders } = require("node-fetch");
+const globalWithFetch = globalThis;
+if (typeof globalWithFetch.Headers === "undefined") {
+    globalWithFetch.Headers = NodeFetchHeaders;
+}
+if (typeof globalWithFetch.fetch === "undefined") {
+    globalWithFetch.fetch = node_fetch_1.default;
+}
 const appendOrderToSheet = (orderData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const SERVICE_ACCOUNT_FILE = path_1.default.join(__dirname, "credentials.json");
-        const credentials = JSON.parse(fs_1.default.readFileSync(SERVICE_ACCOUNT_FILE, "utf8"));
+        const credentials = {
+            type: process.env.TYPE,
+            project_id: process.env.PROJECT_ID,
+            private_key_id: process.env.PRIVATE_KEY_ID,
+            private_key: process.env.PRIVATE_KEY,
+            client_email: process.env.CLIENT_EMAIL,
+            client_id: process.env.CLIENT_ID,
+            auth_uri: process.env.AUTH_URI,
+            token_uri: process.env.TOKEN_URI,
+            auth_provider_x509_cert_url: process.env.AUTH_PROVIDER_X509_CERT_URL,
+            client_x509_cert_url: process.env.CLIENT_X509_CERT_URL,
+            universe_domain: process.env.UNIVERSE_DOMAIN,
+        };
+        console.log({ credentials });
         const auth = new googleapis_1.google.auth.GoogleAuth({
             credentials,
             scopes: ["https://www.googleapis.com/auth/spreadsheets"],
@@ -46,11 +67,11 @@ const appendOrderToSheet = (orderData) => __awaiter(void 0, void 0, void 0, func
                 values,
             },
         });
-        const whatsappResponse = yield fetch(`https://int.chatway.in/api/send-msg?username=${process.env.WHATSAPP_USERNAME}&number=${process.env.WHATSAPP_NUMBER}&message=customerName->${orderData.customerName}, customerEmail-> ${orderData.customerEmail}, totalAmount-> ${orderData.totalAmount}, items-> ${orderData.items}, address-> ${orderData.address}&token=${process.env.WHATSAPP_TOKEN}`, {
+        const whatsappResponse = yield (0, node_fetch_1.default)(`https://int.chatway.in/api/send-msg?username=${process.env.WHATSAPP_USERNAME}&number=${process.env.WHATSAPP_NUMBER}&message=customerName->${orderData.customerName}, customerEmail-> ${orderData.customerEmail}, totalAmount-> ${orderData.totalAmount}, items-> ${orderData.items}, address-> ${orderData.address}&token=${process.env.WHATSAPP_TOKEN}`, {
             method: "GET",
         });
         console.log({ whatsappResponse });
-        console.log("Order logged to Google Sheets:", response.data);
+        console.log("Order logged to Google Sheets:", response);
     }
     catch (error) {
         console.error("Error logging order to Google Sheets:", error);
