@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.appendComments = exports.appendOrderToSheet = void 0;
+const buffer_1 = require("buffer");
 const googleapis_1 = require("googleapis");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
@@ -21,6 +22,9 @@ const { Headers: NodeFetchHeaders } = require("node-fetch");
 const globalWithFetch = globalThis;
 if (typeof globalWithFetch.Headers === "undefined") {
     globalWithFetch.Headers = NodeFetchHeaders;
+}
+if (typeof globalWithFetch.Blob === "undefined") {
+    globalWithFetch.Blob = buffer_1.Blob;
 }
 if (typeof globalWithFetch.fetch === "undefined") {
     globalWithFetch.fetch = node_fetch_1.default;

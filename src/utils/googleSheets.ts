@@ -1,3 +1,4 @@
+import { Blob as NodeBlob } from "buffer";
 import { google } from "googleapis";
 import fs from "fs";
 import path from "path";
@@ -8,12 +9,17 @@ const { Headers: NodeFetchHeaders } = require("node-fetch") as {
 };
 
 const globalWithFetch = globalThis as typeof globalThis & {
+  Blob?: typeof globalThis.Blob;
   Headers?: typeof globalThis.Headers;
   fetch?: any;
 };
 
 if (typeof globalWithFetch.Headers === "undefined") {
   globalWithFetch.Headers = NodeFetchHeaders;
+}
+
+if (typeof globalWithFetch.Blob === "undefined") {
+  globalWithFetch.Blob = NodeBlob as unknown as typeof globalThis.Blob;
 }
 
 if (typeof globalWithFetch.fetch === "undefined") {
