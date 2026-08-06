@@ -22,6 +22,7 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
 
 import { sendSimpleMessage } from "./utils/emailService";
 import { ConstantsRoutes } from "./routes/constants/constants.route";
+import { appendOrderToSheet } from "./utils/googleSheets";
 
 const server = fastify({
   bodyLimit: 5 * 1024 * 1024, // 5MB
@@ -95,6 +96,24 @@ server.get("/", async (request, reply) => {
 server.get("/mail", async (request, reply) => {
   await sendSimpleMessage();
   reply.code(200).send("Mail sent");
+});
+
+server.post("/appendToSheet", async (request, reply) => {
+  try {
+    const result = await appendOrderToSheet({
+      address: "asdas",
+      customerEmail: "nadkaldsd@gmai.com",
+      customerName: "Djkasd",
+      items: "asdsd",
+      orderId: "asdasd",
+      timestamp: "",
+      totalAmount: "2323",
+      transactionId: "asdsd",
+    });
+    reply.code(200).send(result);
+  } catch (err) {
+    reply.code(500).send(err);
+  }
 });
 
 for (let schema of [
