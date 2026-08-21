@@ -25,7 +25,7 @@ import { ConstantsRoutes } from "./routes/constants/constants.route";
 import { appendOrderToSheet } from "./utils/googleSheets";
 
 const server = fastify({
-  bodyLimit: 5 * 1024 * 1024, // 5MB
+  bodyLimit: 15 * 1024 * 1024, // 5MB
 });
 
 require("dotenv").config();
