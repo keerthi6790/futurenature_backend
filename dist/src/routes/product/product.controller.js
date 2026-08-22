@@ -19,7 +19,7 @@ const AddProducts = (request, reply) => __awaiter(void 0, void 0, void 0, functi
     const { description, imageUrl, price, productName, descriptionTamil, discountedAmount, discountedType, productNameTamil, availableQuantity, } = request.body;
     try {
         if (!request.user.isAdmin) {
-            reply.code(500).send({
+            return reply.code(403).send({
                 status: false,
                 data: "You don't have an access to add the product",
             });

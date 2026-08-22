@@ -37,7 +37,7 @@ const emailService_1 = require("./utils/emailService");
 const constants_route_1 = require("./routes/constants/constants.route");
 const googleSheets_1 = require("./utils/googleSheets");
 const server = (0, fastify_1.default)({
-    bodyLimit: 5 * 1024 * 1024, // 5MB
+    bodyLimit: 15 * 1024 * 1024, // 5MB
 });
 require("dotenv").config();
 if (process.env.JWT_SECRET_KEY)

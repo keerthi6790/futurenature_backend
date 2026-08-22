@@ -21,7 +21,7 @@ export const AddProducts = async (
 
   try {
     if (!(request.user as any).isAdmin) {
-      reply.code(500).send({
+      return reply.code(403).send({
         status: false,
         data: "You don't have an access to add the product",
       });
