@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMyOrders = exports.getOrderById = void 0;
+exports.getMyOrders = exports.getAllOrders = exports.getOrderById = void 0;
 const Prisma_1 = __importDefault(require("../../utils/Prisma"));
 const getOrderById = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -49,6 +49,48 @@ const getOrderById = (request, reply) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.getOrderById = getOrderById;
+const getAllOrders = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        if (!request.user.isAdmin) {
+            return reply.code(403).send({
+                status: false,
+                data: "You don't have an access to add the product",
+            });
+        }
+        const order = yield Prisma_1.default.order.findMany({
+            where: {
+                paymentStatus: "PAID",
+            },
+            orderBy: { createdAt: "desc" },
+            include: {
+                items: {
+                    include: {
+                        product: true,
+                    },
+                },
+                address: true,
+            },
+        });
+        if (!order) {
+            return reply.code(404).send({
+                status: false,
+                message: "Order not found",
+            });
+        }
+        reply.code(200).send({
+            status: true,
+            data: order,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching order:", error);
+        reply.code(500).send({
+            status: false,
+            message: "Something went wrong fetching order",
+        });
+    }
+});
+exports.getAllOrders = getAllOrders;
 const getMyOrders = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = request.user.id;

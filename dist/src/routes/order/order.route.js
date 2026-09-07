@@ -19,6 +19,13 @@ const OrderRoutes = (app) => __awaiter(void 0, void 0, void 0, function* () {
             summary: "Get all user orders",
         },
     }, order_controller_1.getMyOrders);
+    app.get("/admin/all", {
+        preHandler: [app.authenticate],
+        schema: {
+            tags: ["Order"],
+            summary: "Get all user orders for admin",
+        },
+    }, order_controller_1.getAllOrders);
     app.get("/:id", {
         preHandler: [app.authenticate],
         schema: {
@@ -27,9 +34,9 @@ const OrderRoutes = (app) => __awaiter(void 0, void 0, void 0, function* () {
             params: {
                 type: "object",
                 properties: {
-                    id: { type: "string" }
-                }
-            }
+                    id: { type: "string" },
+                },
+            },
         },
     }, order_controller_1.getOrderById);
 });
