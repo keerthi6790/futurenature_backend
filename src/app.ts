@@ -88,6 +88,7 @@ server.register(fastifyCors, {
     "http://localhost:3002",
     "https://futurenature12.netlify.app",
     "https://futurenature.in",
+    "https://test-futurenature.netlify.app"
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
