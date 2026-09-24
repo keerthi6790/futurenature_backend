@@ -54,6 +54,8 @@ model Product {
   review_count       Int         @default(0)
   isDailyDeals       Boolean     @default(false)
   isDeleted          Boolean     @default(false)
+  categoryId         String?
+  category           Category?   @relation(fields: [categoryId], references: [id])
   cart               CartItem[]
   order_items        OrderItem[]
   reviews            Review[]
@@ -162,3 +164,28 @@ model Constants{
   name String
   boolean String
 }
+
+model Banner {
+  id              String   @id @default(uuid())
+  title           String?
+  desktopImageUrl String
+  mobileImageUrl  String?
+  desktopHref     String?
+  mobileHref      String?
+  isActive        Boolean  @default(true)
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+}
+
+model Category {
+  id             String    @id @default(uuid())
+  category_name  String
+  category_id    String    @unique @default(uuid())
+  category_image String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
+  products       Product[]
+}
+
+

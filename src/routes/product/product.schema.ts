@@ -35,6 +35,7 @@ const AddProductsRequestSchme = z.object({
       required_error: "Available Quantity is Required",
     })
     .optional(),
+  categoryId: z.string().optional(),
 });
 
 const UpdateProductsRequestSchme = AddProductsRequestSchme.partial();

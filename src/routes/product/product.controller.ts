@@ -17,6 +17,7 @@ export const AddProducts = async (
     discountedType,
     productNameTamil,
     availableQuantity,
+    categoryId,
   } = request.body;
 
   try {
@@ -56,6 +57,7 @@ export const AddProducts = async (
         product_name_tamil: productNameTamil,
         selling_price: String(sellingPrice),
         available_quantity: availableQuantity ? +availableQuantity : 5,
+        categoryId: categoryId || null,
       },
     });
 
@@ -73,15 +75,42 @@ export const AddProducts = async (
 };
 
 export const listAllProducts = async (
-  request: FastifyRequest<{ Querystring: { includeDeleted?: string } }>,
+  request: FastifyRequest<{
+    Querystring: {
+      includeDeleted?: string;
+      categories?: string;
+      category?: string;
+      categoryId?: string;
+    };
+  }>,
   reply: FastifyReply,
 ) => {
-  const { includeDeleted } = request.query;
+  const { includeDeleted, categories, category, categoryId } = request.query;
+  const rawCategories = categories || category || categoryId;
+
   try {
+    const whereClause: any = {};
+    if (includeDeleted !== "true") {
+      whereClause.isDeleted = false;
+    }
+
+    if (rawCategories && rawCategories !== "all") {
+      const catList = rawCategories
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean);
+
+      if (catList.length > 0) {
+        whereClause.OR = [
+          { categoryId: { in: catList } },
+          { category: { category_id: { in: catList } } },
+          { category: { category_name: { in: catList, mode: "insensitive" } } },
+        ];
+      }
+    }
+
     const productData = await prisma.product.findMany({
-      where: includeDeleted === "true" ? {} : {
-        isDeleted: false,
-      },
+      where: whereClause,
       select: {
         id: true,
         product_name: true,
@@ -96,7 +125,16 @@ export const listAllProducts = async (
         overall_rating: true,
         review_count: true,
         isDailyDeals: true,
-        available_quantity: true
+        available_quantity: true,
+        categoryId: true,
+        category: {
+          select: {
+            id: true,
+            category_name: true,
+            category_id: true,
+            category_image: true,
+          },
+        },
       },
     });
 
@@ -122,6 +160,7 @@ export const getSpecificProductData = async (
         id: request.params.id,
       },
       include: {
+        category: true,
         reviews: {
           select: {
             rating: true,
@@ -175,6 +214,7 @@ export const UpdateProduct = async (
     discountedType,
     productNameTamil,
     availableQuantity,
+    categoryId,
   } = request.body;
 
   try {
@@ -205,6 +245,7 @@ export const UpdateProduct = async (
     if (description) updateData.description = description;
     if (descriptionTamil) updateData.description_tamil = descriptionTamil;
     if (availableQuantity) updateData.available_quantity = +availableQuantity;
+    if (categoryId !== undefined) updateData.categoryId = categoryId || null;
     if (price || discountedAmount || discountedType) {
       const finalPrice = price || existingProduct.price;
       const finalDiscountType =

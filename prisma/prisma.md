@@ -42,6 +42,7 @@ erDiagram
   Int review_count
   Boolean isDailyDeals
   Boolean isDeleted
+  String categoryId FK "nullable"
 }
 "Review" {
   String id PK
@@ -119,6 +120,27 @@ erDiagram
   String name
   String boolean
 }
+"Banner" {
+  String id PK
+  String title "nullable"
+  String desktopImageUrl
+  String mobileImageUrl "nullable"
+  String desktopHref "nullable"
+  String mobileHref "nullable"
+  Boolean isActive
+  Int order
+  DateTime createdAt
+  DateTime updatedAt
+}
+"Category" {
+  String id PK
+  String category_name
+  String category_id UK
+  String category_image "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"Product" }o--o| "Category" : category
 "Review" }o--|| "User" : addedBy
 "Review" }o--|| "Product" : Product
 "Address" }o--|| "User" : User
@@ -177,6 +199,7 @@ Properties as follows:
 - `review_count`:
 - `isDailyDeals`:
 - `isDeleted`:
+- `categoryId`:
 
 ### `Review`
 
@@ -277,3 +300,29 @@ Properties as follows:
 - `id`:
 - `name`:
 - `boolean`:
+
+### `Banner`
+
+Properties as follows:
+
+- `id`:
+- `title`:
+- `desktopImageUrl`:
+- `mobileImageUrl`:
+- `desktopHref`:
+- `mobileHref`:
+- `isActive`:
+- `order`:
+- `createdAt`:
+- `updatedAt`:
+
+### `Category`
+
+Properties as follows:
+
+- `id`:
+- `category_name`:
+- `category_id`:
+- `category_image`:
+- `createdAt`:
+- `updatedAt`:
