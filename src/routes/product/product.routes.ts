@@ -72,6 +72,23 @@ export async function ProductRoutes(app: FastifyInstance) {
     getSpecificProductData
   );
 
+  app.get(
+    "/:id",
+    {
+      schema: {
+        params: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+          },
+        },
+        tags: ["Product"],
+        summary: "Get specific product details",
+      },
+    },
+    getSpecificProductData
+  );
+
   app.put(
     "/update/:id",
     {

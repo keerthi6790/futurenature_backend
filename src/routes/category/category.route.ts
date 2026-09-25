@@ -87,6 +87,17 @@ export async function CategoryRoutes(app: FastifyInstance) {
     ListCategories
   );
 
+  app.get(
+    "/all",
+    {
+      schema: {
+        tags: ["Category"],
+        summary: "List all categories",
+      },
+    },
+    ListCategories
+  );
+
   // Get specific category
   app.get(
     "/:id",
