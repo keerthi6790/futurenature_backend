@@ -50,6 +50,18 @@ function ProductRoutes(app) {
                 description: "Fetches detailed information for a specific product, including variants and reviews, using `prisma.product.findFirst` with `include`.",
             },
         }, product_controller_1.getSpecificProductData);
+        app.get("/:id", {
+            schema: {
+                params: {
+                    type: "object",
+                    properties: {
+                        id: { type: "string" },
+                    },
+                },
+                tags: ["Product"],
+                summary: "Get specific product details",
+            },
+        }, product_controller_1.getSpecificProductData);
         app.put("/update/:id", {
             preHandler: [app.authenticate],
             schema: {

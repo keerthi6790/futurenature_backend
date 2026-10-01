@@ -16,7 +16,7 @@ exports.toggleDailyDeal = exports.getDailyDeals = exports.RestoreProduct = expor
 const Prisma_1 = __importDefault(require("../../utils/Prisma"));
 const s3_utils_1 = require("../../utils/s3.utils");
 const AddProducts = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
-    const { description, imageUrl, price, productName, descriptionTamil, discountedAmount, discountedType, productNameTamil, availableQuantity, } = request.body;
+    const { description, imageUrl, price, productName, descriptionTamil, discountedAmount, discountedType, productNameTamil, availableQuantity, categoryId, } = request.body;
     try {
         if (!request.user.isAdmin) {
             return reply.code(403).send({
@@ -49,6 +49,7 @@ const AddProducts = (request, reply) => __awaiter(void 0, void 0, void 0, functi
                 product_name_tamil: productNameTamil,
                 selling_price: String(sellingPrice),
                 available_quantity: availableQuantity ? +availableQuantity : 5,
+                categoryId: categoryId || null,
             },
         });
         reply.code(200).send({
@@ -66,12 +67,28 @@ const AddProducts = (request, reply) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.AddProducts = AddProducts;
 const listAllProducts = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
-    const { includeDeleted } = request.query;
+    const { includeDeleted, categories, category, categoryId } = request.query;
+    const rawCategories = categories || category || categoryId;
     try {
+        const whereClause = {};
+        if (includeDeleted !== "true") {
+            whereClause.isDeleted = false;
+        }
+        if (rawCategories && rawCategories !== "all") {
+            const catList = rawCategories
+                .split(",")
+                .map((c) => c.trim())
+                .filter(Boolean);
+            if (catList.length > 0) {
+                whereClause.OR = [
+                    { categoryId: { in: catList } },
+                    { category: { category_id: { in: catList } } },
+                    { category: { category_name: { in: catList, mode: "insensitive" } } },
+                ];
+            }
+        }
         const productData = yield Prisma_1.default.product.findMany({
-            where: includeDeleted === "true" ? {} : {
-                isDeleted: false,
-            },
+            where: whereClause,
             select: {
                 id: true,
                 product_name: true,
@@ -86,12 +103,23 @@ const listAllProducts = (request, reply) => __awaiter(void 0, void 0, void 0, fu
                 overall_rating: true,
                 review_count: true,
                 isDailyDeals: true,
-                available_quantity: true
+                available_quantity: true,
+                categoryId: true,
+                category: {
+                    select: {
+                        id: true,
+                        category_name: true,
+                        category_id: true,
+                        category_image: true,
+                    },
+                },
             },
         });
+        const formattedProducts = productData.map((p) => (Object.assign(Object.assign({}, p), { category: p.category
+                ? Object.assign(Object.assign({}, p.category), { name: p.category.category_name, image_url: p.category.category_image }) : null })));
         reply.code(200).send({
             status: true,
-            data: productData,
+            data: formattedProducts,
         });
     }
     catch (err) {
@@ -109,6 +137,7 @@ const getSpecificProductData = (request, reply) => __awaiter(void 0, void 0, voi
                 id: request.params.id,
             },
             include: {
+                category: true,
                 reviews: {
                     select: {
                         rating: true,
@@ -124,9 +153,11 @@ const getSpecificProductData = (request, reply) => __awaiter(void 0, void 0, voi
             },
         });
         if (productInfo) {
+            const formatted = Object.assign(Object.assign({}, productInfo), { category: productInfo.category
+                    ? Object.assign(Object.assign({}, productInfo.category), { name: productInfo.category.category_name, image_url: productInfo.category.category_image }) : null });
             reply.code(200).send({
                 status: true,
-                data: productInfo,
+                data: formatted,
             });
         }
         else {
@@ -146,7 +177,7 @@ const getSpecificProductData = (request, reply) => __awaiter(void 0, void 0, voi
 exports.getSpecificProductData = getSpecificProductData;
 const UpdateProduct = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = request.params;
-    const { description, imageUrl, price, productName, descriptionTamil, discountedAmount, discountedType, productNameTamil, availableQuantity, } = request.body;
+    const { description, imageUrl, price, productName, descriptionTamil, discountedAmount, discountedType, productNameTamil, availableQuantity, categoryId, } = request.body;
     try {
         if (!request.user.isAdmin) {
             return reply.code(403).send({
@@ -176,6 +207,8 @@ const UpdateProduct = (request, reply) => __awaiter(void 0, void 0, void 0, func
             updateData.description_tamil = descriptionTamil;
         if (availableQuantity)
             updateData.available_quantity = +availableQuantity;
+        if (categoryId !== undefined)
+            updateData.categoryId = categoryId || null;
         if (price || discountedAmount || discountedType) {
             const finalPrice = price || existingProduct.price;
             const finalDiscountType = discountedType || existingProduct.discounted_type;

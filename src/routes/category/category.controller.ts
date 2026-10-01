@@ -2,21 +2,42 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import {
   ZodAddCategoryRequestSchema,
   ZodUpdateCategoryRequestSchema,
+  ZodAssignProductsRequestSchema,
 } from "./category.schema";
 import prisma from "../../utils/Prisma";
 import { uploadToS3 } from "../../utils/s3.utils";
+
+export const formatCategory = (cat: any) => {
+  if (!cat) return cat;
+  return {
+    ...cat,
+    name: cat.category_name || cat.name,
+    image_url: cat.category_image || cat.image_url,
+    category_name: cat.category_name || cat.name,
+    category_image: cat.category_image || cat.image_url,
+  };
+};
 
 export const AddCategory = async (
   request: FastifyRequest<{ Body: ZodAddCategoryRequestSchema }>,
   reply: FastifyReply
 ) => {
-  const { categoryName, categoryId, categoryImage } = request.body;
+  const { categoryId } = request.body;
+  const categoryName = request.body.name || request.body.categoryName;
+  const categoryImage = request.body.image_url || request.body.imageUrl || request.body.categoryImage;
 
   try {
     if (!(request.user as any)?.isAdmin) {
       return reply.code(403).send({
         status: false,
         message: "You don't have access to add categories (Admin only)",
+      });
+    }
+
+    if (!categoryName) {
+      return reply.code(400).send({
+        status: false,
+        message: "Category name is required",
       });
     }
 
@@ -39,7 +60,7 @@ export const AddCategory = async (
     reply.code(200).send({
       status: true,
       message: "Category created successfully!",
-      data: category,
+      data: formatCategory(category),
     });
   } catch (err: any) {
     console.error("AddCategory error:", err);
@@ -58,7 +79,9 @@ export const UpdateCategory = async (
   reply: FastifyReply
 ) => {
   const { id } = request.params;
-  const { categoryName, categoryId, categoryImage } = request.body;
+  const { categoryId } = request.body;
+  const categoryName = request.body.name || request.body.categoryName;
+  const categoryImage = request.body.image_url || request.body.imageUrl || request.body.categoryImage;
 
   try {
     if (!(request.user as any)?.isAdmin) {
@@ -92,7 +115,7 @@ export const UpdateCategory = async (
     reply.code(200).send({
       status: true,
       message: "Category updated successfully!",
-      data: updatedCategory,
+      data: formatCategory(updatedCategory),
     });
   } catch (err: any) {
     console.error("UpdateCategory error:", err);
@@ -156,7 +179,7 @@ export const ListCategories = async (
 
     reply.code(200).send({
       status: true,
-      data: categories,
+      data: categories.map(formatCategory),
     });
   } catch (err: any) {
     console.error("ListCategories error:", err);
@@ -194,7 +217,7 @@ export const GetCategoryById = async (
 
     reply.code(200).send({
       status: true,
-      data: category,
+      data: formatCategory(category),
     });
   } catch (err: any) {
     console.error("GetCategoryById error:", err);
@@ -204,3 +227,62 @@ export const GetCategoryById = async (
     });
   }
 };
+
+export const AssignProductsToCategory = async (
+  request: FastifyRequest<{
+    Params?: { id?: string };
+    Body: ZodAssignProductsRequestSchema;
+  }>,
+  reply: FastifyReply
+) => {
+  const categoryId = request.params?.id || request.body.categoryId;
+  const { productIds } = request.body;
+
+  try {
+    if (!(request.user as any)?.isAdmin) {
+      return reply.code(403).send({
+        status: false,
+        message: "You don't have access to assign products (Admin only)",
+      });
+    }
+
+    if (!categoryId) {
+      return reply.code(400).send({
+        status: false,
+        message: "Category ID is required",
+      });
+    }
+
+    const category = await (prisma as any).category.findFirst({
+      where: {
+        OR: [{ id: categoryId }, { category_id: categoryId }],
+      },
+    });
+
+    if (!category) {
+      return reply.code(404).send({
+        status: false,
+        message: "Category not found",
+      });
+    }
+
+    if (Array.isArray(productIds) && productIds.length > 0) {
+      await prisma.product.updateMany({
+        where: { id: { in: productIds } },
+        data: { categoryId: category.id },
+      });
+    }
+
+    reply.code(200).send({
+      status: true,
+      message: "Products assigned successfully to category!",
+    });
+  } catch (err: any) {
+    console.error("AssignProductsToCategory error:", err);
+    reply.code(500).send({
+      status: false,
+      message: err.message || "Failed to assign products to category",
+    });
+  }
+};
+

@@ -6,6 +6,7 @@ import {
   DeleteCategory,
   ListCategories,
   GetCategoryById,
+  AssignProductsToCategory,
 } from "./category.controller";
 
 export async function CategoryRoutes(app: FastifyInstance) {
@@ -34,6 +35,39 @@ export async function CategoryRoutes(app: FastifyInstance) {
       },
     },
     AddCategory
+  );
+
+  // Assign products to category (Admin only)
+  app.post(
+    "/:id/assign",
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        params: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+          },
+        },
+        body: $ref("AssignProductsRequestSchema"),
+        tags: ["Category"],
+        summary: "Assign products to category (Admin only)",
+      },
+    },
+    AssignProductsToCategory
+  );
+
+  app.post(
+    "/assign",
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        body: $ref("AssignProductsRequestSchema"),
+        tags: ["Category"],
+        summary: "Assign products to category (Admin only)",
+      },
+    },
+    AssignProductsToCategory
   );
 
   // Update category (Admin only)
@@ -118,3 +152,4 @@ export async function CategoryRoutes(app: FastifyInstance) {
 }
 
 export default CategoryRoutes;
+

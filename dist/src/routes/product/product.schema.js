@@ -38,6 +38,7 @@ const AddProductsRequestSchme = zod_1.default.object({
         required_error: "Available Quantity is Required",
     })
         .optional(),
+    categoryId: zod_1.default.string().nullable().optional(),
 });
 const UpdateProductsRequestSchme = AddProductsRequestSchme.partial();
 _a = (0, fastify_zod_1.buildJsonSchemas)({

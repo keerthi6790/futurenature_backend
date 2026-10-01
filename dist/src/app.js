@@ -30,6 +30,10 @@ const contact_route_1 = __importDefault(require("./routes/contact/contact.route"
 const contact_schema_1 = require("./routes/contact/contact.schema");
 const payment_route_1 = require("./routes/payment/payment.route");
 const order_route_1 = require("./routes/order/order.route");
+const banner_schema_1 = require("./routes/banner/banner.schema");
+const banner_route_1 = require("./routes/banner/banner.route");
+const category_schema_1 = require("./routes/category/category.schema");
+const category_route_1 = require("./routes/category/category.route");
 const cors_1 = __importDefault(require("@fastify/cors"));
 const swagger_1 = __importDefault(require("@fastify/swagger"));
 const swagger_ui_1 = __importDefault(require("@fastify/swagger-ui"));
@@ -86,6 +90,7 @@ server.register(cors_1.default, {
         "http://localhost:3002",
         "https://futurenature12.netlify.app",
         "https://futurenature.in",
+        "https://test-futurenature.netlify.app"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
@@ -122,6 +127,8 @@ for (let schema of [
     ...address_schema_1.addressSchema,
     ...cart_schema_1.cartSchema,
     ...contact_schema_1.contactSchemas,
+    ...banner_schema_1.bannerSchemas,
+    ...category_schema_1.categorySchemas,
 ]) {
     server.addSchema(schema);
 }
@@ -135,6 +142,8 @@ server.register(contact_route_1.default, { prefix: "api/contact" });
 server.register(constants_route_1.ConstantsRoutes, { prefix: "api/constants" });
 server.register(payment_route_1.PaymentRoutes, { prefix: "api/payment" });
 server.register(order_route_1.OrderRoutes, { prefix: "api/order" });
+server.register(banner_route_1.BannerRoutes, { prefix: "api/banner" });
+server.register(category_route_1.CategoryRoutes, { prefix: "api/category" });
 server
     .listen({ port: 8081, host: "0.0.0.0" })
     .then(() => console.log(`Process running on http://localhost:8081`))

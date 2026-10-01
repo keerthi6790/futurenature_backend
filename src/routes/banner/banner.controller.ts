@@ -3,6 +3,14 @@ import { ZodAddBannerRequestSchema, ZodUpdateBannerRequestSchema } from "./banne
 import prisma from "../../utils/Prisma";
 import { uploadToS3 } from "../../utils/s3.utils";
 
+export const formatBanner = (b: any) => {
+  if (!b) return b;
+  return {
+    ...b,
+    imageUrl: b.desktopImageUrl || b.mobileImageUrl || "",
+  };
+};
+
 export const AddBanner = async (
   request: FastifyRequest<{ Body: ZodAddBannerRequestSchema }>,
   reply: FastifyReply
@@ -16,6 +24,8 @@ export const AddBanner = async (
     isActive = true,
     order = 0,
   } = request.body;
+  const rawDesktop = desktopImageUrl || (request.body as any).imageUrl;
+  const rawMobile = mobileImageUrl;
 
   try {
     if (!(request.user as any)?.isAdmin) {
@@ -25,18 +35,25 @@ export const AddBanner = async (
       });
     }
 
-    let processedDesktopUrl = desktopImageUrl;
-    if (desktopImageUrl && (desktopImageUrl.startsWith("data:image/") || desktopImageUrl.length > 500)) {
+    if (!rawDesktop && !rawMobile) {
+      return reply.code(400).send({
+        status: false,
+        message: "At least one banner image (desktop or mobile) is required",
+      });
+    }
+
+    let processedDesktopUrl = rawDesktop || rawMobile;
+    if (rawDesktop && (rawDesktop.startsWith("data:image/") || rawDesktop.length > 500)) {
       processedDesktopUrl = await uploadToS3(
-        desktopImageUrl,
+        rawDesktop,
         `banner-desktop-${Date.now()}.jpg`
       );
     }
 
-    let processedMobileUrl = mobileImageUrl || null;
-    if (mobileImageUrl && (mobileImageUrl.startsWith("data:image/") || mobileImageUrl.length > 500)) {
+    let processedMobileUrl = rawMobile || null;
+    if (rawMobile && (rawMobile.startsWith("data:image/") || rawMobile.length > 500)) {
       processedMobileUrl = await uploadToS3(
-        mobileImageUrl,
+        rawMobile,
         `banner-mobile-${Date.now()}.jpg`
       );
     }
@@ -44,7 +61,7 @@ export const AddBanner = async (
     const banner = await (prisma as any).banner.create({
       data: {
         title: title || null,
-        desktopImageUrl: processedDesktopUrl,
+        desktopImageUrl: processedDesktopUrl || "",
         mobileImageUrl: processedMobileUrl,
         desktopHref: desktopHref || null,
         mobileHref: mobileHref || null,
@@ -56,7 +73,7 @@ export const AddBanner = async (
     reply.code(200).send({
       status: true,
       message: "Banner added successfully!",
-      data: banner,
+      data: formatBanner(banner),
     });
   } catch (err: any) {
     console.error("AddBanner error:", err);
@@ -203,7 +220,7 @@ export const ListAllBanners = async (
 
     reply.code(200).send({
       status: true,
-      data: banners,
+      data: banners.map(formatBanner),
     });
   } catch (err: any) {
     console.error("ListAllBanners error:", err);

@@ -138,9 +138,20 @@ export const listAllProducts = async (
       },
     });
 
+    const formattedProducts = productData.map((p: any) => ({
+      ...p,
+      category: p.category
+        ? {
+            ...p.category,
+            name: p.category.category_name,
+            image_url: p.category.category_image,
+          }
+        : null,
+    }));
+
     reply.code(200).send({
       status: true,
-      data: productData,
+      data: formattedProducts,
     });
   } catch (err) {
     reply.code(500).send({
@@ -178,9 +189,19 @@ export const getSpecificProductData = async (
     });
 
     if (productInfo) {
+      const formatted = {
+        ...productInfo,
+        category: (productInfo as any).category
+          ? {
+              ...(productInfo as any).category,
+              name: (productInfo as any).category.category_name,
+              image_url: (productInfo as any).category.category_image,
+            }
+          : null,
+      };
       reply.code(200).send({
         status: true,
-        data: productInfo,
+        data: formatted,
       });
     } else {
       reply.code(500).send({

@@ -3,10 +3,9 @@ import z from "zod";
 
 const AddBannerRequestSchema = z.object({
   title: z.string().optional(),
-  desktopImageUrl: z.string({
-    required_error: "Desktop Image URL is required",
-  }),
+  desktopImageUrl: z.string().optional(),
   mobileImageUrl: z.string().optional(),
+  imageUrl: z.string().optional(),
   desktopHref: z.string().optional(),
   mobileHref: z.string().optional(),
   isActive: z.boolean().optional().default(true),
