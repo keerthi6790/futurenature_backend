@@ -26,6 +26,20 @@ const OrderRoutes = (app) => __awaiter(void 0, void 0, void 0, function* () {
             summary: "Get all user orders for admin",
         },
     }, order_controller_1.getAllOrders);
+    app.put("/admin/status/:id", {
+        preHandler: [app.authenticate],
+        schema: {
+            tags: ["Order"],
+            summary: "Update order status for admin",
+        },
+    }, order_controller_1.updateOrderStatus);
+    app.put("/:id/status", {
+        preHandler: [app.authenticate],
+        schema: {
+            tags: ["Order"],
+            summary: "Update order status",
+        },
+    }, order_controller_1.updateOrderStatus);
     app.get("/:id", {
         preHandler: [app.authenticate],
         schema: {

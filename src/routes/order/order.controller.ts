@@ -133,3 +133,51 @@ export const getMyOrders = async (
     });
   }
 };
+
+export const updateOrderStatus = async (
+  request: FastifyRequest<{
+    Params: { id: string };
+    Body: { order_status: string };
+  }>,
+  reply: FastifyReply,
+) => {
+  try {
+    if (!(request.user as any)?.isAdmin) {
+      return reply.code(403).send({
+        status: false,
+        message: "You don't have access to update order status",
+      });
+    }
+
+    const { id } = request.params;
+    const { order_status } = request.body || {};
+
+    const normalizedStatus = (order_status || "").trim().toLowerCase();
+    if (!["pending", "shipped"].includes(normalizedStatus)) {
+      return reply.code(400).send({
+        status: false,
+        message: "Invalid order status. Allowed options: pending, shipped",
+      });
+    }
+
+    const updatedOrder = await prisma.order.update({
+      where: { id },
+      data: {
+        order_status: normalizedStatus,
+      },
+    });
+
+    return reply.code(200).send({
+      status: true,
+      message: "Order status updated successfully",
+      data: updatedOrder,
+    });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    return reply.code(500).send({
+      status: false,
+      message: "Something went wrong updating order status",
+    });
+  }
+};
+

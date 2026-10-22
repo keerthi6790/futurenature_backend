@@ -100,6 +100,7 @@ erDiagram
   String shippingPrice
   String mrp_price
   String paymentStatus
+  String order_status
   String paymentId "nullable"
   String razorpayOrderId "nullable"
   String addressId FK
@@ -275,6 +276,7 @@ Properties as follows:
 - `shippingPrice`:
 - `mrp_price`:
 - `paymentStatus`:
+- `order_status`:
 - `paymentId`:
 - `razorpayOrderId`:
 - `addressId`:

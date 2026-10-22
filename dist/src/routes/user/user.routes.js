@@ -47,5 +47,8 @@ function UserRoutes(app) {
         app.get("/userData", {
             preHandler: [app.authenticate],
         }, user_controller_1.getUserData);
+        app.get("/admin/contacts", {
+            preHandler: [app.authenticate],
+        }, user_controller_1.getAllContacts);
     });
 }

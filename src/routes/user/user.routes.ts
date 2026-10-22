@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import {
+  getAllContacts,
   getUserData,
   RegisterUser,
   triggerOtp,
@@ -62,5 +63,13 @@ export async function UserRoutes(app: FastifyInstance) {
       preHandler: [app.authenticate],
     },
     getUserData,
+  );
+
+  app.get(
+    "/admin/contacts",
+    {
+      preHandler: [app.authenticate],
+    },
+    getAllContacts,
   );
 }

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserData = exports.RegisterUser = exports.verifyOtp = exports.triggerOtp = void 0;
+exports.getAllContacts = exports.getUserData = exports.RegisterUser = exports.verifyOtp = exports.triggerOtp = void 0;
 const Prisma_1 = __importDefault(require("../../utils/Prisma"));
 const GenerateOtp_1 = require("../../utils/GenerateOtp");
 const client_1 = require("@prisma/client");
@@ -208,3 +208,48 @@ const getUserData = (request, reply) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getUserData = getUserData;
+const getAllContacts = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d;
+    try {
+        if (!((_a = request.user) === null || _a === void 0 ? void 0 : _a.isAdmin)) {
+            return reply.code(403).send({
+                status: false,
+                message: "You don't have access to view contacts",
+            });
+        }
+        const isAll = ((_b = request.query) === null || _b === void 0 ? void 0 : _b.all) === "true";
+        const page = Math.max(1, parseInt(((_c = request.query) === null || _c === void 0 ? void 0 : _c.page) || "1", 10) || 1);
+        const limit = Math.max(1, parseInt(((_d = request.query) === null || _d === void 0 ? void 0 : _d.limit) || "20", 10) || 20);
+        const skip = (page - 1) * limit;
+        const [total, users] = yield Promise.all([
+            Prisma_1.default.user.count(),
+            Prisma_1.default.user.findMany(Object.assign(Object.assign({}, (isAll ? {} : { skip, take: limit })), { orderBy: { createdAt: "desc" }, select: {
+                    id: true,
+                    phone_number: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    createdAt: true,
+                } })),
+        ]);
+        return reply.code(200).send({
+            status: true,
+            message: "Contacts fetched successfully",
+            data: users,
+            pagination: {
+                total,
+                page: isAll ? 1 : page,
+                limit: isAll ? total : limit,
+                totalPages: isAll ? 1 : Math.ceil(total / limit),
+            },
+        });
+    }
+    catch (err) {
+        console.error("Error fetching contacts:", err);
+        return reply.code(500).send({
+            status: false,
+            message: "Something went wrong fetching contacts",
+        });
+    }
+});
+exports.getAllContacts = getAllContacts;

@@ -223,3 +223,59 @@ export const getUserData = async (
     });
   }
 };
+
+export const getAllContacts = async (
+  request: FastifyRequest<{
+    Querystring: { page?: string; limit?: string; all?: string };
+  }>,
+  reply: FastifyReply,
+) => {
+  try {
+    if (!(request.user as any)?.isAdmin) {
+      return reply.code(403).send({
+        status: false,
+        message: "You don't have access to view contacts",
+      });
+    }
+
+    const isAll = request.query?.all === "true";
+    const page = Math.max(1, parseInt(request.query?.page || "1", 10) || 1);
+    const limit = Math.max(1, parseInt(request.query?.limit || "20", 10) || 20);
+    const skip = (page - 1) * limit;
+
+    const [total, users] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.findMany({
+        ...(isAll ? {} : { skip, take: limit }),
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          phone_number: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          createdAt: true,
+        },
+      }),
+    ]);
+
+    return reply.code(200).send({
+      status: true,
+      message: "Contacts fetched successfully",
+      data: users,
+      pagination: {
+        total,
+        page: isAll ? 1 : page,
+        limit: isAll ? total : limit,
+        totalPages: isAll ? 1 : Math.ceil(total / limit),
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching contacts:", err);
+    return reply.code(500).send({
+      status: false,
+      message: "Something went wrong fetching contacts",
+    });
+  }
+};
+

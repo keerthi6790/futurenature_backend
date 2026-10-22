@@ -1,5 +1,10 @@
 import { FastifyInstance } from "fastify";
-import { getMyOrders, getOrderById, getAllOrders } from "./order.controller";
+import {
+  getMyOrders,
+  getOrderById,
+  getAllOrders,
+  updateOrderStatus,
+} from "./order.controller";
 
 export const OrderRoutes = async (app: FastifyInstance) => {
   app.get(
@@ -24,6 +29,30 @@ export const OrderRoutes = async (app: FastifyInstance) => {
       },
     },
     getAllOrders,
+  );
+
+  app.put(
+    "/admin/status/:id",
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        tags: ["Order"],
+        summary: "Update order status for admin",
+      },
+    },
+    updateOrderStatus,
+  );
+
+  app.put(
+    "/:id/status",
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        tags: ["Order"],
+        summary: "Update order status",
+      },
+    },
+    updateOrderStatus,
   );
 
   app.get(

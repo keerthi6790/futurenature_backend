@@ -137,6 +137,7 @@ model Order {
   shippingPrice String @default("0")
   mrp_price        String
   paymentStatus    String      @default("PENDING")
+  order_status     String      @default("pending")
   paymentId        String?
   razorpayOrderId  String?
   addressId        String
